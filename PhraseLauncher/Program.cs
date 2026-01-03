@@ -118,7 +118,7 @@ class Program
                     GetShortcutKeyLabel(i) + ": " + templates[i].text.Replace("\n", " "));
             }
 
-            // ★ ListBox は ↑↓ 完全に標準動作
+            // ListBox は ↑↓ 完全に標準動作
             // 先頭で ↑ のときだけタブへ戻す
             listBox.KeyDown += (s, e) =>
             {
@@ -134,7 +134,7 @@ class Program
             tabControl.TabPages.Add(tab);
         }
 
-        // ★ タブ操作は「タブにフォーカスがあるときだけ」
+        // タブ操作はタブにフォーカスがあるときだけ
         tabControl.KeyDown += (s, e) =>
         {
             if (!tabControl.Focused) return;
@@ -150,9 +150,22 @@ class Program
             }
         };
 
+
         jsonForm.Controls.Add(tabControl);
         jsonForm.Show();
-        tabControl.Focus();
+
+        if (tabControl.TabPages.Count > 0)
+        {
+            tabControl.SelectedIndex = 0;
+
+            if (tabControl.TabPages[0].Controls.Count > 0 &&
+                tabControl.TabPages[0].Controls[0] is ListBox lb &&
+                lb.Items.Count > 0)
+            {
+                lb.SelectedIndex = 0;
+                lb.Focus();
+            }
+        }
     }
 
     static string GetShortcutKeyLabel(int index)

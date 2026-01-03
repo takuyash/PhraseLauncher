@@ -26,8 +26,8 @@ namespace PhraseLauncher
             dgv.SetBounds(10, 40, 560, 380);
             Button saveBtn = new() { Text = "保存", Left = 480, Top = 430 };
             Button delBtn = new() { Text = "削除", Left = 390, Top = 430 };
-            Button upBtn = new() { Text = "↑", Left = 300, Top = 430 };
-            Button downBtn = new() { Text = "↓", Left = 340, Top = 430 };
+            Button upBtn = new() { Text = "↑", Left = 220, Top = 430 };
+            Button downBtn = new() { Text = "↓", Left = 310, Top = 430 };
 
             dgv.ColumnCount = 2;
             dgv.Columns[0].Name = "定型文";

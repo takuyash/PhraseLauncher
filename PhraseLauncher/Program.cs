@@ -211,7 +211,7 @@ class Program
         Button saveBtn = new() { Text = "保存", Left = 480, Top = 430, Width = 80 };
         Button deleteBtn = new() { Text = "削除", Left = 390, Top = 430, Width = 80 };
 
-        // ★ 並び替えボタン（追加）
+        //  並び替えボタン
         Button upBtn = new() { Text = "↑", Left = 300, Top = 430, Width = 40 };
         Button downBtn = new() { Text = "↓", Left = 340, Top = 430, Width = 40 };
 
@@ -278,11 +278,22 @@ class Program
 
         deleteBtn.Click += (s, e) =>
         {
-            if (dgv.CurrentRow != null && !dgv.CurrentRow.IsNewRow)
+            if (dgv.CurrentRow == null || dgv.CurrentRow.IsNewRow) return;
+
+            var result = MessageBox.Show(
+                "選択している定型文を削除します。\nよろしいですか？",
+                "削除確認",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning
+            );
+
+            if (result == DialogResult.Yes)
+            {
                 dgv.Rows.Remove(dgv.CurrentRow);
+            }
         };
 
-        // ★ 並び替え処理（旧ソース完全踏襲）
+        // 並び替え処理
         upBtn.Click += (s, e) =>
         {
             if (dgv.CurrentRow == null || dgv.CurrentRow.IsNewRow) return;

@@ -211,10 +211,15 @@ class Program
         Button saveBtn = new() { Text = "保存", Left = 480, Top = 430, Width = 80 };
         Button deleteBtn = new() { Text = "削除", Left = 390, Top = 430, Width = 80 };
 
+        // ★ 並び替えボタン（追加）
+        Button upBtn = new() { Text = "↑", Left = 300, Top = 430, Width = 40 };
+        Button downBtn = new() { Text = "↓", Left = 340, Top = 430, Width = 40 };
+
         dgv.ColumnCount = 2;
         dgv.Columns[0].Name = "定型文";
         dgv.Columns[1].Name = "メモ";
         dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+        dgv.MultiSelect = false;
 
         foreach (var f in Directory.GetFiles(jsonFolder, "*.json"))
             fileCombo.Items.Add(Path.GetFileNameWithoutExtension(f));
@@ -240,8 +245,8 @@ class Program
                 "新しいグループ名を入力", "新規作成", "new");
 
             if (string.IsNullOrWhiteSpace(name)) return;
-
             name = Path.GetFileNameWithoutExtension(name);
+
             if (!fileCombo.Items.Contains(name))
                 fileCombo.Items.Add(name);
 
@@ -261,10 +266,8 @@ class Program
                 if (r.IsNewRow) continue;
                 list.Add(new TemplateItem
                 {
-                    text = (r.Cells[0].Value ?? "").ToString()
-                        .Replace(Environment.NewLine, "\n"),
-                    note = (r.Cells[1].Value ?? "").ToString()
-                        .Replace(Environment.NewLine, "\n")
+                    text = (r.Cells[0].Value ?? "").ToString().Replace(Environment.NewLine, "\n"),
+                    note = (r.Cells[1].Value ?? "").ToString().Replace(Environment.NewLine, "\n")
                 });
             }
 
@@ -279,9 +282,34 @@ class Program
                 dgv.Rows.Remove(dgv.CurrentRow);
         };
 
+        // ★ 並び替え処理（旧ソース完全踏襲）
+        upBtn.Click += (s, e) =>
+        {
+            if (dgv.CurrentRow == null || dgv.CurrentRow.IsNewRow) return;
+            int index = dgv.CurrentRow.Index;
+            if (index <= 0) return;
+
+            var row = dgv.Rows[index];
+            dgv.Rows.RemoveAt(index);
+            dgv.Rows.Insert(index - 1, row);
+            dgv.CurrentCell = row.Cells[0];
+        };
+
+        downBtn.Click += (s, e) =>
+        {
+            if (dgv.CurrentRow == null || dgv.CurrentRow.IsNewRow) return;
+            int index = dgv.CurrentRow.Index;
+            if (index >= dgv.Rows.Count - 2) return;
+
+            var row = dgv.Rows[index];
+            dgv.Rows.RemoveAt(index);
+            dgv.Rows.Insert(index + 1, row);
+            dgv.CurrentCell = row.Cells[0];
+        };
+
         editorForm.Controls.AddRange(new Control[]
         {
-            fileCombo, newFileBtn, dgv, saveBtn, deleteBtn
+            fileCombo, newFileBtn, dgv, saveBtn, deleteBtn, upBtn, downBtn
         });
 
         editorForm.Show();

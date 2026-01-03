@@ -203,7 +203,6 @@ class Program
         dgv.Columns[1].Name = "メモ";
         dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
 
-        // ★ 拡張子なしで表示
         foreach (var f in Directory.GetFiles(jsonFolder, "*.json"))
             fileCombo.Items.Add(Path.GetFileNameWithoutExtension(f));
 
@@ -310,6 +309,7 @@ class Program
 
             for (int i = 0; i < 9; i++)
             {
+                // 通常数字キー
                 Keys k = (Keys)(Keys.D1 + i);
                 if ((GetAsyncKeyState(k) & 0x8000) != 0 && !pressed.Contains(k))
                 {
@@ -319,7 +319,19 @@ class Program
                 }
                 if ((GetAsyncKeyState(k) & 0x8000) == 0)
                     pressed.Remove(k);
+
+                // テンキー数字
+                Keys nk = (Keys)(Keys.NumPad1 + i);
+                if ((GetAsyncKeyState(nk) & 0x8000) != 0 && !pressed.Contains(nk))
+                {
+                    pressed.Add(nk);
+                    if (i < list.Count)
+                        TriggerTemplateStatic(list[i].text);
+                }
+                if ((GetAsyncKeyState(nk) & 0x8000) == 0)
+                    pressed.Remove(nk);
             }
+
         }
 
         public static void TriggerTemplateStatic(string text)

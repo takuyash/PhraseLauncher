@@ -90,6 +90,42 @@ namespace PhraseLauncher
                     dgv.Rows.Remove(dgv.CurrentRow);
             };
 
+            // 新規作成ボタンのクリックイベント
+            newBtn.Click += (s, e) =>
+            {
+                // 新しいテンプレート名を入力
+                string newName = Microsoft.VisualBasic.Interaction.InputBox(
+                    "新しい JSON ファイル名を入力（例: test.json）", "新規作成", "new.json");
+
+                if (string.IsNullOrWhiteSpace(newName)) return;
+
+                // 拡張子確認
+                if (!newName.EndsWith(".json")) newName += ".json";
+
+                string path = Path.Combine(TemplateRepository.JsonFolder, newName);
+
+                // ファイルが存在する場合は警告
+                if (File.Exists(path))
+                {
+                    MessageBox.Show("同名のファイルが既に存在します。");
+                    return;
+                }
+
+                // 空の JSON ファイルを作成
+                File.WriteAllText(path, "[]");
+
+                // ComboBox に追加して選択
+                if (!fileCombo.Items.Contains(Path.GetFileNameWithoutExtension(newName)))
+                    fileCombo.Items.Add(Path.GetFileNameWithoutExtension(newName));
+                fileCombo.SelectedItem = Path.GetFileNameWithoutExtension(newName);
+
+                // DataGridView を空にして編集可能に
+                dgv.Rows.Clear();
+                dgv.Rows.Add("", ""); // 最初の空行を追加してすぐ編集可能に
+                dgv.CurrentCell = dgv.Rows[0].Cells[0];
+            };
+
+
             upBtn.Click += (s, e) => MoveRow(-1);
             downBtn.Click += (s, e) => MoveRow(1);
 

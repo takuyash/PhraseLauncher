@@ -18,6 +18,8 @@ class Program
     private const int HOTKEY_ID = 9001;
     private const uint MOD_CONTROL_SHIFT = 0x0002 | 0x0004;
     private const uint VK_SPACE = 0x20;
+    private const int WM_HOTKEY = 0x0312;
+
 
     public static HiddenForm hiddenForm;
     public static Form jsonForm;
@@ -42,11 +44,7 @@ class Program
         menu.Items.Add(new ToolStripMenuItem("終了", null, (s, e) => Application.Exit()));
         tray.ContextMenuStrip = menu;
 
-        hiddenForm = new HiddenForm
-        {
-            ShowInTaskbar = false,
-            Opacity = 0
-        };
+        hiddenForm = new HiddenForm { ShowInTaskbar = false, Opacity = 0 };
         hiddenForm.Show();
 
         Application.Run();
@@ -72,10 +70,10 @@ class Program
         string jsonFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "json");
         Directory.CreateDirectory(jsonFolder);
 
-        string[] jsonFiles = Directory.GetFiles(jsonFolder, "*.json");
-        if (jsonFiles.Length == 0)
+        var files = Directory.GetFiles(jsonFolder, "*.json");
+        if (files.Length == 0)
         {
-            MessageBox.Show("json フォルダに JSON ファイルが見つかりません。");
+            MessageBox.Show("json がありません");
             return;
         }
 
@@ -92,23 +90,18 @@ class Program
 
         TabControl tabControl = new() { Dock = DockStyle.Fill };
 
-        foreach (var file in jsonFiles)
+        foreach (var file in files)
         {
-            List<TemplateItem> templates;
-            try
-            {
-                templates = JsonSerializer.Deserialize<List<TemplateItem>>(
-                    File.ReadAllText(file).Replace("\r\n", "\n"));
-            }
-            catch
-            {
-                templates = new() { new TemplateItem { text = "読み込みエラー", note = "" } };
-            }
+            var templates = JsonSerializer.Deserialize<List<TemplateItem>>(
+                File.ReadAllText(file).Replace("\r\n", "\n"));
 
             allTemplates.Add(templates);
 
-            ListBox listBox = new() { Dock = DockStyle.Fill };
-            ToolTip toolTip = new();
+            ListBox listBox = new()
+            {
+                Dock = DockStyle.Fill,
+                IntegralHeight = false
+            };
 
             for (int i = 0; i < templates.Count; i++)
             {
@@ -116,53 +109,62 @@ class Program
                     GetShortcutKeyLabel(i) + ": " + templates[i].text.Replace("\n", " "));
             }
 
-            listBox.MouseMove += (s, e) =>
+            // ★ ListBox は ↑↓ 完全に標準動作
+            // 先頭で ↑ のときだけタブへ戻す
+            listBox.KeyDown += (s, e) =>
             {
-                int index = listBox.IndexFromPoint(e.Location);
-                if (index >= 0 && index < templates.Count)
-                    toolTip.SetToolTip(listBox, templates[index].note);
+                if (e.KeyCode == Keys.Up && listBox.SelectedIndex == 0)
+                {
+                    tabControl.Focus();
+                    e.Handled = true;
+                }
             };
 
-            listBox.DoubleClick += (s, e) =>
-            {
-                if (listBox.SelectedIndex >= 0)
-                    HiddenForm.TriggerTemplateStatic(
-                        templates[listBox.SelectedIndex].text);
-            };
-
-            // ★ .json を表示しない
-            TabPage tabPage = new(Path.GetFileNameWithoutExtension(file));
-            tabPage.Controls.Add(listBox);
-            tabControl.TabPages.Add(tabPage);
+            TabPage tab = new(Path.GetFileNameWithoutExtension(file));
+            tab.Controls.Add(listBox);
+            tabControl.TabPages.Add(tab);
         }
+
+        // ★ タブ操作は「タブにフォーカスがあるときだけ」
+        tabControl.KeyDown += (s, e) =>
+        {
+            if (!tabControl.Focused) return;
+
+            if (e.KeyCode == Keys.Down)
+            {
+                if (tabControl.SelectedTab.Controls[0] is ListBox lb && lb.Items.Count > 0)
+                {
+                    lb.Focus();
+                    lb.SelectedIndex = 0;
+                }
+                e.Handled = true;
+            }
+        };
 
         jsonForm.Controls.Add(tabControl);
         jsonForm.Show();
+        tabControl.Focus();
     }
 
     static string GetShortcutKeyLabel(int index)
     {
         if (index < 9) return (index + 1).ToString();
         index -= 9;
-        string label = "";
+        string s = "";
         do
         {
-            label = (char)('a' + (index % 26)) + label;
+            s = (char)('a' + index % 26) + s;
             index = index / 26 - 1;
         } while (index >= 0);
-        return label;
+        return s;
     }
 
     static void PasteText(string text)
     {
         Clipboard.SetText(text);
-        var timer = new Timer { Interval = 100 };
-        timer.Tick += (s, e) =>
-        {
-            timer.Stop();
-            SendKeys.SendWait("^v");
-        };
-        timer.Start();
+        var t = new Timer { Interval = 100 };
+        t.Tick += (s, e) => { t.Stop(); SendKeys.SendWait("^v"); };
+        t.Start();
     }
 
     // -------------------
@@ -269,89 +271,53 @@ class Program
     // -------------------
     public class HiddenForm : Form
     {
-        Timer keyTimer = new Timer { Interval = 50 };
-        HashSet<Keys> pressedKeys = new HashSet<Keys>();
+        Timer timer = new() { Interval = 50 };
+        HashSet<Keys> pressed = new();
 
         public HiddenForm()
         {
-            this.Load += (s, e) => RegisterShortcutKeys();
-            this.FormClosing += (s, e) => UnregisterShortcutKeys();
-
-            keyTimer.Tick += KeyTimer_Tick;
-            keyTimer.Start();
+            Load += (s, e) => RegisterHotKey(Handle, HOTKEY_ID, MOD_CONTROL_SHIFT, VK_SPACE);
+            FormClosing += (s, e) => UnregisterHotKey(Handle, HOTKEY_ID);
+            timer.Tick += Tick;
+            timer.Start();
         }
 
         protected override void WndProc(ref Message m)
         {
-            const int WM_HOTKEY = 0x0312;
-
             if (m.Msg == WM_HOTKEY && m.WParam.ToInt32() == HOTKEY_ID)
             {
-                Program.ShowJsonList();
+                ShowJsonList();
             }
-
             base.WndProc(ref m);
         }
 
-        private void KeyTimer_Tick(object sender, EventArgs e)
+        void Tick(object sender, EventArgs e)
         {
-            if (Program.jsonForm == null || Program.jsonForm.IsDisposed || !Program.jsonForm.Visible)
-                return;
+            if (jsonForm == null || jsonForm.IsDisposed) return;
+            var tab = jsonForm.Controls[0] as TabControl;
+            if (tab == null) return;
 
-            if (Program.jsonForm.Controls.Count == 0) return;
-
-            var tabControl = Program.jsonForm.Controls[0] as TabControl;
-            if (tabControl == null) return;
-
-            int tabIndex = tabControl.SelectedIndex;
-            if (tabIndex < 0 || tabIndex >= allTemplates.Count) return;
-
-            var templates = allTemplates[tabIndex];
+            var list = allTemplates[tab.SelectedIndex];
 
             for (int i = 0; i < 9; i++)
             {
-                Keys k = (Keys)(0x31 + i); // 1～9
-                if ((GetAsyncKeyState(k) & 0x8000) != 0)
+                Keys k = (Keys)(Keys.D1 + i);
+                if ((GetAsyncKeyState(k) & 0x8000) != 0 && !pressed.Contains(k))
                 {
-                    if (!pressedKeys.Contains(k))
-                    {
-                        pressedKeys.Add(k);
-                        TriggerTemplate(templates, i);
-                    }
+                    pressed.Add(k);
+                    if (i < list.Count)
+                        TriggerTemplateStatic(list[i].text);
                 }
-                else
-                {
-                    pressedKeys.Remove(k);
-                }
+                if ((GetAsyncKeyState(k) & 0x8000) == 0)
+                    pressed.Remove(k);
             }
-        }
-
-        void TriggerTemplate(List<TemplateItem> templates, int index)
-        {
-            if (index >= templates.Count) return;
-            TriggerTemplateStatic(templates[index].text);
         }
 
         public static void TriggerTemplateStatic(string text)
         {
             PasteText(text);
-
-            if (Program.jsonForm != null && !Program.jsonForm.IsDisposed)
-            {
-                Program.jsonForm.Close();
-                Program.jsonForm = null;
-            }
-        }
-
-        public void RegisterShortcutKeys()
-        {
-            RegisterHotKey(this.Handle, HOTKEY_ID, MOD_CONTROL_SHIFT, VK_SPACE);
-        }
-
-        public void UnregisterShortcutKeys()
-        {
-            UnregisterHotKey(this.Handle, HOTKEY_ID);
+            jsonForm?.Close();
+            jsonForm = null;
         }
     }
-
 }

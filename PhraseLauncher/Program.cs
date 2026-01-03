@@ -185,6 +185,9 @@ class Program
         DataGridView dgv = new DataGridView { Left = 10, Top = 40, Width = 560, Height = 380 };
         Button saveBtn = new Button { Text = "ï€ë∂", Left = 480, Top = 430, Width = 80 };
         Button deleteBtn = new Button { Text = "çÌèú", Left = 390, Top = 430, Width = 80 };
+        Button upBtn = new Button { Text = "Å™", Left = 300, Top = 430, Width = 40 };
+        Button downBtn = new Button { Text = "Å´", Left = 340, Top = 430, Width = 40 };
+
 
         dgv.AllowUserToAddRows = true;
         dgv.AllowUserToDeleteRows = true;
@@ -222,6 +225,9 @@ class Program
         editorForm.Controls.Add(dgv);
         editorForm.Controls.Add(saveBtn);
         editorForm.Controls.Add(deleteBtn);
+        editorForm.Controls.Add(upBtn);
+        editorForm.Controls.Add(downBtn);
+
 
         fileCombo.SelectedIndexChanged += (s, e) =>
         {
@@ -291,6 +297,36 @@ class Program
                 dgv.Rows.Remove(dgv.CurrentRow);
             }
         };
+
+        upBtn.Click += (s, e) =>
+        {
+            if (dgv.CurrentRow == null || dgv.CurrentRow.IsNewRow) return;
+
+            int index = dgv.CurrentRow.Index;
+            if (index <= 0) return;
+
+            DataGridViewRow row = dgv.Rows[index];
+            dgv.Rows.RemoveAt(index);
+            dgv.Rows.Insert(index - 1, row);
+
+            dgv.CurrentCell = row.Cells[0];
+        };
+
+        downBtn.Click += (s, e) =>
+        {
+            if (dgv.CurrentRow == null || dgv.CurrentRow.IsNewRow) return;
+
+            int index = dgv.CurrentRow.Index;
+            if (index >= dgv.Rows.Count - 2) return; // NewRowï™Ççló∂
+
+            DataGridViewRow row = dgv.Rows[index];
+            dgv.Rows.RemoveAt(index);
+            dgv.Rows.Insert(index + 1, row);
+
+            dgv.CurrentCell = row.Cells[0];
+        };
+
+
 
 
         editorForm.Show();

@@ -23,7 +23,7 @@ namespace PhraseLauncher
             var files = Directory.GetFiles(TemplateRepository.JsonFolder, "*.json");
             if (files.Length == 0)
             {
-                MessageBox.Show("json がありません");
+                MessageBox.Show("定型文の登録がありません。タスクトレイのアプリを右クリックして、定型文を登録してください。");
                 return;
             }
 

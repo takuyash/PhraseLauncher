@@ -15,7 +15,7 @@ static class Program
 
         NotifyIcon tray = new()
         {
-            Icon = System.Drawing.SystemIcons.Application,
+            Icon = new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "icon.ico")),
             Visible = true,
             Text = "PhraseLauncher"
         };

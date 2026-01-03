@@ -85,7 +85,19 @@ class Program
             Height = 400,
             StartPosition = FormStartPosition.CenterScreen,
             TopMost = true,
-            Text = "’èŒ^•¶ˆê——"
+            Text = "’èŒ^•¶ˆê——",
+            KeyPreview = true
+        };
+
+        // EscƒL[‚Å•Â‚¶‚é
+        jsonForm.KeyDown += (s, e) =>
+        {
+            if (e.KeyCode == Keys.Escape)
+            {
+                jsonForm.Close();
+                jsonForm = null;
+                e.Handled = true;
+            }
         };
 
         TabControl tabControl = new() { Dock = DockStyle.Fill };

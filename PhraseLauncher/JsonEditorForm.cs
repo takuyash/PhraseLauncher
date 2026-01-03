@@ -32,7 +32,25 @@ namespace PhraseLauncher
             dgv.ColumnCount = 2;
             dgv.Columns[0].Name = "定型文";
             dgv.Columns[1].Name = "メモ";
+            dgv.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+
+            // Enterキーで改行できるようにする
+            dgv.KeyDown += (s, e) =>
+            {
+                if (e.KeyCode == Keys.Enter && dgv.CurrentCell != null && !dgv.CurrentCell.ReadOnly)
+                {
+                    e.Handled = true;
+                    dgv.BeginEdit(true);
+
+                    if (dgv.EditingControl is TextBox tb)
+                    {
+                        int pos = tb.SelectionStart;
+                        tb.Text = tb.Text.Insert(pos, Environment.NewLine);
+                        tb.SelectionStart = pos + Environment.NewLine.Length;
+                    }
+                }
+            };
 
             foreach (var f in Directory.GetFiles(TemplateRepository.JsonFolder, "*.json"))
                 fileCombo.Items.Add(Path.GetFileNameWithoutExtension(f));

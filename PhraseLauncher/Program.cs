@@ -184,6 +184,7 @@ class Program
         Button newFileBtn = new Button { Text = "新規作成", Left = 420, Top = 10, Width = 80 };
         DataGridView dgv = new DataGridView { Left = 10, Top = 40, Width = 560, Height = 380 };
         Button saveBtn = new Button { Text = "保存", Left = 480, Top = 430, Width = 80 };
+        Button deleteBtn = new Button { Text = "削除", Left = 390, Top = 430, Width = 80 };
 
         dgv.AllowUserToAddRows = true;
         dgv.AllowUserToDeleteRows = true;
@@ -220,6 +221,7 @@ class Program
         editorForm.Controls.Add(newFileBtn);
         editorForm.Controls.Add(dgv);
         editorForm.Controls.Add(saveBtn);
+        editorForm.Controls.Add(deleteBtn);
 
         fileCombo.SelectedIndexChanged += (s, e) =>
         {
@@ -268,6 +270,28 @@ class Program
             File.WriteAllText(filePath, JsonSerializer.Serialize(templates, new JsonSerializerOptions { WriteIndented = true }));
             MessageBox.Show("保存しました。");
         };
+
+        deleteBtn.Click += (s, e) =>
+        {
+            if (dgv.CurrentRow == null || dgv.CurrentRow.IsNewRow)
+            {
+                MessageBox.Show("削除する行を選択してください。");
+                return;
+            }
+
+            var result = MessageBox.Show(
+                "選択中の定型文を削除しますか？",
+                "確認",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+
+            if (result == DialogResult.Yes)
+            {
+                dgv.Rows.Remove(dgv.CurrentRow);
+            }
+        };
+
 
         editorForm.Show();
     }

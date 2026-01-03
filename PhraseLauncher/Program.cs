@@ -369,7 +369,7 @@ class Program
 
             for (int i = 0; i < 9; i++)
             {
-                Keys k = Keys.D1 + i;
+                Keys k = (Keys)(0x31 + i); // VK_1 ` VK_9iIME”ñˆË‘¶j
                 if ((GetAsyncKeyState(k) & 0x8000) != 0)
                 {
                     if (!pressedKeys.Contains(k))

@@ -10,6 +10,7 @@ namespace PhraseLauncher
     class JsonEditorForm : Form
     {
         ComboBox fileCombo = new();
+
         DataGridView dgv = new();
 
         public JsonEditorForm()
@@ -18,11 +19,16 @@ namespace PhraseLauncher
             Height = 500;
             Text = "定型文編集・登録";
             StartPosition = FormStartPosition.CenterScreen;
+            fileCombo.DropDownStyle = ComboBoxStyle.DropDownList; // 手入力禁止
 
             Directory.CreateDirectory(TemplateRepository.JsonFolder);
 
             fileCombo.SetBounds(10, 10, 400, 25);
             Button newBtn = new() { Text = "新規作成", Left = 420, Top = 10 };
+
+            // グループ名変更ボタン
+            Button renameBtn = new() { Text = "グループ名変更", Left = 500, Top = 10 };
+
             dgv.SetBounds(10, 40, 560, 380);
             Button saveBtn = new() { Text = "保存", Left = 480, Top = 430 };
             Button delBtn = new() { Text = "削除", Left = 390, Top = 430 };
@@ -95,7 +101,7 @@ namespace PhraseLauncher
             {
                 // ユーザーには拡張子なしの名前だけ入力してもらう
                 string newName = Microsoft.VisualBasic.Interaction.InputBox(
-                    "新しいテンプレート名を入力（例: test）", "新規作成", "new");
+                    "新しいグループ名を入力（例: test）", "新規作成", "new");
 
                 if (string.IsNullOrWhiteSpace(newName)) return;
 
@@ -124,6 +130,40 @@ namespace PhraseLauncher
                 dgv.CurrentCell = dgv.Rows[0].Cells[0];
             };
 
+            // ファイル名変更ボタン
+            renameBtn.Click += (s, e) =>
+            {
+                if (string.IsNullOrWhiteSpace(fileCombo.Text)) return;
+
+                string oldName = fileCombo.Text;
+                string newName = Microsoft.VisualBasic.Interaction.InputBox(
+                    "新しいテンプレート名を入力", "名前変更", oldName);
+
+                if (string.IsNullOrWhiteSpace(newName) || newName == oldName) return;
+
+                string oldPath = Path.Combine(TemplateRepository.JsonFolder, oldName + ".json");
+                string newPath = Path.Combine(TemplateRepository.JsonFolder, newName + ".json");
+
+                if (File.Exists(newPath))
+                {
+                    MessageBox.Show("同名のテンプレートが既に存在します。");
+                    return;
+                }
+
+                try
+                {
+                    File.Move(oldPath, newPath);
+                    int idx = fileCombo.SelectedIndex;
+                    fileCombo.Items[idx] = newName;
+                    fileCombo.SelectedItem = newName;
+                    MessageBox.Show("名前を変更しました。");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("名前変更に失敗しました。\n" + ex.Message);
+                }
+            };
+
             upBtn.Click += (s, e) => MoveRow(-1);
             downBtn.Click += (s, e) => MoveRow(1);
 
@@ -132,7 +172,7 @@ namespace PhraseLauncher
                 fileCombo.SelectedIndex = 0;
 
             Controls.AddRange(new Control[]
-            { fileCombo, newBtn, dgv, saveBtn, delBtn, upBtn, downBtn });
+            { fileCombo, newBtn, dgv, saveBtn, delBtn, upBtn, downBtn,renameBtn });
         }
 
         void MoveRow(int dir)

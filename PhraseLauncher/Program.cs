@@ -1,11 +1,10 @@
-using System.Runtime.InteropServices;
-using System.Text.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Windows.Forms;
+using Timer = System.Windows.Forms.Timer;
 
 class Program
 {
@@ -17,12 +16,12 @@ class Program
     private static extern short GetAsyncKeyState(Keys vKey);
 
     private const int HOTKEY_ID = 9001;
-    private const uint MOD_CONTROL_SHIFT = 0x0002 | 0x0004; // Ctrl+Shift
+    private const uint MOD_CONTROL_SHIFT = 0x0002 | 0x0004;
     private const uint VK_SPACE = 0x20;
 
     public static HiddenForm hiddenForm;
     public static Form jsonForm;
-    private static List<List<TemplateItem>> allTemplates = new List<List<TemplateItem>>();
+    private static List<List<TemplateItem>> allTemplates = new();
 
     [STAThread]
     static void Main()
@@ -30,22 +29,24 @@ class Program
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
 
-        NotifyIcon tray = new NotifyIcon
+        NotifyIcon tray = new()
         {
             Icon = System.Drawing.SystemIcons.Application,
             Visible = true,
             Text = "PhraseLauncher"
         };
 
-        ContextMenuStrip menu = new ContextMenuStrip();
+        ContextMenuStrip menu = new();
         menu.Items.Add(new ToolStripMenuItem("一覧表示", null, (s, e) => ShowJsonList()));
         menu.Items.Add(new ToolStripMenuItem("編集/登録", null, (s, e) => ShowJsonEditor()));
         menu.Items.Add(new ToolStripMenuItem("終了", null, (s, e) => Application.Exit()));
         tray.ContextMenuStrip = menu;
 
-        hiddenForm = new HiddenForm();
-        hiddenForm.ShowInTaskbar = false;
-        hiddenForm.Opacity = 0;
+        hiddenForm = new HiddenForm
+        {
+            ShowInTaskbar = false,
+            Opacity = 0
+        };
         hiddenForm.Show();
 
         Application.Run();
@@ -69,7 +70,7 @@ class Program
         }
 
         string jsonFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "json");
-        if (!Directory.Exists(jsonFolder)) Directory.CreateDirectory(jsonFolder);
+        Directory.CreateDirectory(jsonFolder);
 
         string[] jsonFiles = Directory.GetFiles(jsonFolder, "*.json");
         if (jsonFiles.Length == 0)
@@ -89,30 +90,31 @@ class Program
             Text = "定型文一覧"
         };
 
-        TabControl tabControl = new TabControl { Dock = DockStyle.Fill };
+        TabControl tabControl = new() { Dock = DockStyle.Fill };
 
         foreach (var file in jsonFiles)
         {
             List<TemplateItem> templates;
             try
             {
-                string json = File.ReadAllText(file);
-                templates = JsonSerializer.Deserialize<List<TemplateItem>>(json.Replace("\r\n", "\n"));
+                templates = JsonSerializer.Deserialize<List<TemplateItem>>(
+                    File.ReadAllText(file).Replace("\r\n", "\n"));
             }
             catch
             {
-                templates = new List<TemplateItem> { new TemplateItem { text = "読み込みエラー", note = "" } };
+                templates = new() { new TemplateItem { text = "読み込みエラー", note = "" } };
             }
 
             allTemplates.Add(templates);
 
-            ListBox listBox = new ListBox { Dock = DockStyle.Fill };
-            ToolTip toolTip = new ToolTip();
+            ListBox listBox = new() { Dock = DockStyle.Fill };
+            ToolTip toolTip = new();
 
-            List<string> displayList = new List<string>();
             for (int i = 0; i < templates.Count; i++)
-                displayList.Add(GetShortcutKeyLabel(i) + ": " + templates[i].text.Replace("\n", " ")); // 表示はスペース
-            listBox.Items.AddRange(displayList.ToArray());
+            {
+                listBox.Items.Add(
+                    GetShortcutKeyLabel(i) + ": " + templates[i].text.Replace("\n", " "));
+            }
 
             listBox.MouseMove += (s, e) =>
             {
@@ -121,15 +123,15 @@ class Program
                     toolTip.SetToolTip(listBox, templates[index].note);
             };
 
-            // ダブルクリックで貼り付け対応
             listBox.DoubleClick += (s, e) =>
             {
-                int idx = listBox.SelectedIndex;
-                if (idx >= 0 && idx < templates.Count)
-                    HiddenForm.TriggerTemplateStatic(templates[idx].text);
+                if (listBox.SelectedIndex >= 0)
+                    HiddenForm.TriggerTemplateStatic(
+                        templates[listBox.SelectedIndex].text);
             };
 
-            TabPage tabPage = new TabPage(Path.GetFileName(file));
+            // ★ .json を表示しない
+            TabPage tabPage = new(Path.GetFileNameWithoutExtension(file));
             tabPage.Controls.Add(listBox);
             tabControl.TabPages.Add(tabPage);
         }
@@ -154,11 +156,10 @@ class Program
     static void PasteText(string text)
     {
         Clipboard.SetText(text);
-        var timer = new System.Windows.Forms.Timer { Interval = 100 };
+        var timer = new Timer { Interval = 100 };
         timer.Tick += (s, e) =>
         {
             timer.Stop();
-            timer.Dispose();
             SendKeys.SendWait("^v");
         };
         timer.Start();
@@ -170,9 +171,9 @@ class Program
     static void ShowJsonEditor()
     {
         string jsonFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "json");
-        if (!Directory.Exists(jsonFolder)) Directory.CreateDirectory(jsonFolder);
+        Directory.CreateDirectory(jsonFolder);
 
-        Form editorForm = new Form
+        Form editorForm = new()
         {
             Width = 600,
             Height = 500,
@@ -180,154 +181,85 @@ class Program
             Text = "定型文編集・登録"
         };
 
-        ComboBox fileCombo = new ComboBox { Left = 10, Top = 10, Width = 400 };
-        Button newFileBtn = new Button { Text = "新規作成", Left = 420, Top = 10, Width = 80 };
-        DataGridView dgv = new DataGridView { Left = 10, Top = 40, Width = 560, Height = 380 };
-        Button saveBtn = new Button { Text = "保存", Left = 480, Top = 430, Width = 80 };
-        Button deleteBtn = new Button { Text = "削除", Left = 390, Top = 430, Width = 80 };
-        Button upBtn = new Button { Text = "↑", Left = 300, Top = 430, Width = 40 };
-        Button downBtn = new Button { Text = "↓", Left = 340, Top = 430, Width = 40 };
+        ComboBox fileCombo = new() { Left = 10, Top = 10, Width = 400 };
+        Button newFileBtn = new() { Text = "新規作成", Left = 420, Top = 10, Width = 80 };
+        DataGridView dgv = new() { Left = 10, Top = 40, Width = 560, Height = 380 };
+        Button saveBtn = new() { Text = "保存", Left = 480, Top = 430, Width = 80 };
+        Button deleteBtn = new() { Text = "削除", Left = 390, Top = 430, Width = 80 };
 
-
-        dgv.AllowUserToAddRows = true;
-        dgv.AllowUserToDeleteRows = true;
         dgv.ColumnCount = 2;
         dgv.Columns[0].Name = "定型文";
         dgv.Columns[1].Name = "メモ";
-        dgv.Columns[0].Width = 250;
-        dgv.Columns[1].Width = 280;
-        dgv.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
         dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
-        dgv.MultiSelect = false;
-        dgv.SelectionMode = DataGridViewSelectionMode.CellSelect;
 
-        dgv.KeyDown += (s, e) =>
-        {
-            if (e.KeyCode == Keys.Enter && dgv.CurrentCell != null && !dgv.CurrentCell.ReadOnly)
-            {
-                e.Handled = true;
-                dgv.BeginEdit(true);
-                var tb = dgv.EditingControl as TextBox;
-                if (tb != null)
-                {
-                    int pos = tb.SelectionStart;
-                    tb.Text = tb.Text.Insert(pos, Environment.NewLine);
-                    tb.SelectionStart = pos + Environment.NewLine.Length;
-                }
-            }
-        };
-
-        string[] jsonFiles = Directory.GetFiles(jsonFolder, "*.json");
-        foreach (var f in jsonFiles) fileCombo.Items.Add(Path.GetFileName(f));
-
-        editorForm.Controls.Add(fileCombo);
-        editorForm.Controls.Add(newFileBtn);
-        editorForm.Controls.Add(dgv);
-        editorForm.Controls.Add(saveBtn);
-        editorForm.Controls.Add(deleteBtn);
-        editorForm.Controls.Add(upBtn);
-        editorForm.Controls.Add(downBtn);
-
+        // ★ 拡張子なしで表示
+        foreach (var f in Directory.GetFiles(jsonFolder, "*.json"))
+            fileCombo.Items.Add(Path.GetFileNameWithoutExtension(f));
 
         fileCombo.SelectedIndexChanged += (s, e) =>
         {
-            string filePath = Path.Combine(jsonFolder, fileCombo.SelectedItem.ToString());
             dgv.Rows.Clear();
-            try
-            {
-                var templates = JsonSerializer.Deserialize<List<TemplateItem>>(File.ReadAllText(filePath).Replace("\r\n", "\n"));
-                foreach (var t in templates)
-                    dgv.Rows.Add(t.text.Replace("\n", Environment.NewLine), t.note.Replace("\n", Environment.NewLine));
-            }
-            catch { }
+            string filePath = Path.Combine(jsonFolder, fileCombo.Text + ".json");
+            if (!File.Exists(filePath)) return;
+
+            var templates = JsonSerializer.Deserialize<List<TemplateItem>>(
+                File.ReadAllText(filePath).Replace("\r\n", "\n"));
+
+            foreach (var t in templates)
+                dgv.Rows.Add(
+                    t.text.Replace("\n", Environment.NewLine),
+                    t.note.Replace("\n", Environment.NewLine));
         };
 
         newFileBtn.Click += (s, e) =>
         {
-            string newName = Microsoft.VisualBasic.Interaction.InputBox("新しい JSON ファイル名を入力（例: test.json）", "新規作成", "new.json");
-            if (!string.IsNullOrEmpty(newName))
-            {
-                dgv.Rows.Clear();
-                if (!newName.EndsWith(".json")) newName += ".json";
-                fileCombo.Items.Add(newName);
-                fileCombo.SelectedItem = newName;
-            }
+            string name = Microsoft.VisualBasic.Interaction.InputBox(
+                "新しいグループ名を入力", "新規作成", "new");
+
+            if (string.IsNullOrWhiteSpace(name)) return;
+
+            name = Path.GetFileNameWithoutExtension(name);
+            if (!fileCombo.Items.Contains(name))
+                fileCombo.Items.Add(name);
+
+            fileCombo.SelectedItem = name;
+            dgv.Rows.Clear();
         };
 
         saveBtn.Click += (s, e) =>
         {
-            if (fileCombo.SelectedItem == null)
+            if (fileCombo.SelectedItem == null) return;
+
+            string filePath = Path.Combine(jsonFolder, fileCombo.Text + ".json");
+            List<TemplateItem> list = new();
+
+            foreach (DataGridViewRow r in dgv.Rows)
             {
-                MessageBox.Show("ファイルを選択してください。");
-                return;
+                if (r.IsNewRow) continue;
+                list.Add(new TemplateItem
+                {
+                    text = (r.Cells[0].Value ?? "").ToString()
+                        .Replace(Environment.NewLine, "\n"),
+                    note = (r.Cells[1].Value ?? "").ToString()
+                        .Replace(Environment.NewLine, "\n")
+                });
             }
 
-            string filePath = Path.Combine(jsonFolder, fileCombo.SelectedItem.ToString());
-            List<TemplateItem> templates = new List<TemplateItem>();
-            foreach (DataGridViewRow row in dgv.Rows)
-            {
-                if (row.IsNewRow) continue;
-                string text = row.Cells[0].Value?.ToString() ?? "";
-                string note = row.Cells[1].Value?.ToString() ?? "";
-                if (!string.IsNullOrWhiteSpace(text))
-                    templates.Add(new TemplateItem { text = text.Replace(Environment.NewLine, "\n"), note = note.Replace(Environment.NewLine, "\n") });
-            }
-
-            File.WriteAllText(filePath, JsonSerializer.Serialize(templates, new JsonSerializerOptions { WriteIndented = true }));
+            File.WriteAllText(filePath,
+                JsonSerializer.Serialize(list, new JsonSerializerOptions { WriteIndented = true }));
             MessageBox.Show("保存しました。");
         };
 
         deleteBtn.Click += (s, e) =>
         {
-            if (dgv.CurrentRow == null || dgv.CurrentRow.IsNewRow)
-            {
-                MessageBox.Show("削除する行を選択してください。");
-                return;
-            }
-
-            var result = MessageBox.Show(
-                "選択中の定型文を削除しますか？",
-                "確認",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question
-            );
-
-            if (result == DialogResult.Yes)
-            {
+            if (dgv.CurrentRow != null && !dgv.CurrentRow.IsNewRow)
                 dgv.Rows.Remove(dgv.CurrentRow);
-            }
         };
 
-        upBtn.Click += (s, e) =>
+        editorForm.Controls.AddRange(new Control[]
         {
-            if (dgv.CurrentRow == null || dgv.CurrentRow.IsNewRow) return;
-
-            int index = dgv.CurrentRow.Index;
-            if (index <= 0) return;
-
-            DataGridViewRow row = dgv.Rows[index];
-            dgv.Rows.RemoveAt(index);
-            dgv.Rows.Insert(index - 1, row);
-
-            dgv.CurrentCell = row.Cells[0];
-        };
-
-        downBtn.Click += (s, e) =>
-        {
-            if (dgv.CurrentRow == null || dgv.CurrentRow.IsNewRow) return;
-
-            int index = dgv.CurrentRow.Index;
-            if (index >= dgv.Rows.Count - 2) return; // NewRow分を考慮
-
-            DataGridViewRow row = dgv.Rows[index];
-            dgv.Rows.RemoveAt(index);
-            dgv.Rows.Insert(index + 1, row);
-
-            dgv.CurrentCell = row.Cells[0];
-        };
-
-
-
+            fileCombo, newFileBtn, dgv, saveBtn, deleteBtn
+        });
 
         editorForm.Show();
     }
@@ -337,7 +269,7 @@ class Program
     // -------------------
     public class HiddenForm : Form
     {
-        System.Windows.Forms.Timer keyTimer = new System.Windows.Forms.Timer();
+        Timer keyTimer = new Timer { Interval = 50 };
         HashSet<Keys> pressedKeys = new HashSet<Keys>();
 
         public HiddenForm()
@@ -345,31 +277,40 @@ class Program
             this.Load += (s, e) => RegisterShortcutKeys();
             this.FormClosing += (s, e) => UnregisterShortcutKeys();
 
-            keyTimer.Interval = 50;
             keyTimer.Tick += KeyTimer_Tick;
             keyTimer.Start();
         }
 
+        protected override void WndProc(ref Message m)
+        {
+            const int WM_HOTKEY = 0x0312;
+
+            if (m.Msg == WM_HOTKEY && m.WParam.ToInt32() == HOTKEY_ID)
+            {
+                Program.ShowJsonList();
+            }
+
+            base.WndProc(ref m);
+        }
+
         private void KeyTimer_Tick(object sender, EventArgs e)
         {
-            if (Program.jsonForm == null || Program.jsonForm.IsDisposed || !Program.jsonForm.Visible) return;
+            if (Program.jsonForm == null || Program.jsonForm.IsDisposed || !Program.jsonForm.Visible)
+                return;
+
             if (Program.jsonForm.Controls.Count == 0) return;
 
             var tabControl = Program.jsonForm.Controls[0] as TabControl;
             if (tabControl == null) return;
 
-            var selectedTab = tabControl.SelectedTab;
-            if (selectedTab == null || selectedTab.Controls.Count == 0) return;
-
-            var listBox = selectedTab.Controls[0] as ListBox;
-            if (listBox == null) return;
-
             int tabIndex = tabControl.SelectedIndex;
+            if (tabIndex < 0 || tabIndex >= allTemplates.Count) return;
+
             var templates = allTemplates[tabIndex];
 
             for (int i = 0; i < 9; i++)
             {
-                Keys k = (Keys)(0x31 + i); // VK_1 ～ VK_9（IME非依存）
+                Keys k = (Keys)(0x31 + i); // 1～9
                 if ((GetAsyncKeyState(k) & 0x8000) != 0)
                 {
                     if (!pressedKeys.Contains(k))
@@ -378,21 +319,10 @@ class Program
                         TriggerTemplate(templates, i);
                     }
                 }
-                else pressedKeys.Remove(k);
-            }
-
-            for (int i = 0; i < 26; i++)
-            {
-                Keys k = Keys.A + i;
-                if ((GetAsyncKeyState(k) & 0x8000) != 0)
+                else
                 {
-                    if (!pressedKeys.Contains(k))
-                    {
-                        pressedKeys.Add(k);
-                        TriggerTemplate(templates, 9 + i);
-                    }
+                    pressedKeys.Remove(k);
                 }
-                else pressedKeys.Remove(k);
             }
         }
 
@@ -402,13 +332,8 @@ class Program
             TriggerTemplateStatic(templates[index].text);
         }
 
-        // 数字キー入力と別に貼り付け処理
         public static void TriggerTemplateStatic(string text)
         {
-            Form activeForm = Form.ActiveForm;
-            if (activeForm != null)
-                activeForm.ActiveControl = null; // 入力抑制
-
             PasteText(text);
 
             if (Program.jsonForm != null && !Program.jsonForm.IsDisposed)
@@ -416,16 +341,6 @@ class Program
                 Program.jsonForm.Close();
                 Program.jsonForm = null;
             }
-        }
-
-        protected override void WndProc(ref Message m)
-        {
-            const int WM_HOTKEY = 0x0312;
-            if (m.Msg == WM_HOTKEY && m.WParam.ToInt32() == HOTKEY_ID)
-            {
-                Program.ShowJsonList();
-            }
-            base.WndProc(ref m);
         }
 
         public void RegisterShortcutKeys()
@@ -438,4 +353,5 @@ class Program
             UnregisterHotKey(this.Handle, HOTKEY_ID);
         }
     }
+
 }

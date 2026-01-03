@@ -125,9 +125,12 @@ namespace PhraseLauncher
                 dgv.CurrentCell = dgv.Rows[0].Cells[0];
             };
 
-
             upBtn.Click += (s, e) => MoveRow(-1);
             downBtn.Click += (s, e) => MoveRow(1);
+
+            // 最初のグループを選択して内容を表示
+            if (fileCombo.Items.Count > 0)
+                fileCombo.SelectedIndex = 0;
 
             Controls.AddRange(new Control[]
             { fileCombo, newBtn, dgv, saveBtn, delBtn, upBtn, downBtn });

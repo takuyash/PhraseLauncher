@@ -103,6 +103,15 @@ class Program
                 IntegralHeight = false
             };
 
+            ToolTip toolTip = new ToolTip();
+
+            listBox.MouseMove += (s, e) =>
+            {
+                int index = listBox.IndexFromPoint(e.Location);
+                if (index >= 0 && index < templates.Count)
+                    toolTip.SetToolTip(listBox, templates[index].note);
+            };
+
             for (int i = 0; i < templates.Count; i++)
             {
                 listBox.Items.Add(

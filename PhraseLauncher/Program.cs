@@ -23,6 +23,7 @@ static class Program
         ContextMenuStrip menu = new();
         menu.Items.Add(new ToolStripMenuItem("ˆê——•\Ž¦", null, (s, e) => JsonListForm.Show()));
         menu.Items.Add(new ToolStripMenuItem("•ÒW/“o˜^", null, (s, e) => new JsonEditorForm().Show()));
+        menu.Items.Add(new ToolStripMenuItem("ƒwƒ‹ƒv", null, (s, e) => new HelpForm().Show()));
         menu.Items.Add(new ToolStripMenuItem("I—¹", null, (s, e) => Application.Exit()));
         tray.ContextMenuStrip = menu;
 

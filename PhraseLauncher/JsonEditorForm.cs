@@ -24,10 +24,10 @@ namespace PhraseLauncher
             Directory.CreateDirectory(TemplateRepository.JsonFolder);
 
             fileCombo.SetBounds(10, 10, 400, 25);
-            Button newBtn = new() { Text = "新規作成", Left = 420, Top = 10 };
+            Button newBtn = new() { Text = "新規作成", Left = 410, Top = 10 };
 
             // グループ名変更ボタン
-            Button renameBtn = new() { Text = "グループ名変更", Left = 500, Top = 10 };
+            Button renameBtn = new() { Text = "グループ名変更", Left = 490, Top = 10 };
 
             dgv.SetBounds(10, 40, 560, 380);
             Button saveBtn = new() { Text = "保存", Left = 480, Top = 430 };
@@ -137,7 +137,7 @@ namespace PhraseLauncher
 
                 string oldName = fileCombo.Text;
                 string newName = Microsoft.VisualBasic.Interaction.InputBox(
-                    "新しいテンプレート名を入力", "名前変更", oldName);
+                    "新しいグループ名を入力", "名前変更", oldName);
 
                 if (string.IsNullOrWhiteSpace(newName) || newName == oldName) return;
 
@@ -146,7 +146,7 @@ namespace PhraseLauncher
 
                 if (File.Exists(newPath))
                 {
-                    MessageBox.Show("同名のテンプレートが既に存在します。");
+                    MessageBox.Show("同名のグループが既に存在します。");
                     return;
                 }
 

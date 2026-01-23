@@ -122,13 +122,21 @@ namespace PhraseLauncher
             foreach (DataGridViewRow r in dgv.Rows)
             {
                 if (r.IsNewRow) continue;
+
+                // ToString() で取得した値をそのまま使う（通常は CRLF になっている想定）
+                string textValue = (r.Cells[0].Value ?? "").ToString()
+                    .Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", "\r\n");
+
+                string noteValue = (r.Cells[1].Value ?? "").ToString()
+                    .Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", "\r\n");
+
                 list.Add(new TemplateItem
                 {
-                    // 保存時にシステム改行を \n に戻す
-                    text = (r.Cells[0].Value ?? "").ToString().Replace(Environment.NewLine, "\n"),
-                    note = (r.Cells[1].Value ?? "").ToString().Replace(Environment.NewLine, "\n")
+                    text = textValue,
+                    note = noteValue
                 });
             }
+
             var path = Path.Combine(TemplateRepository.JsonFolder, fileCombo.Text + ".json");
             TemplateRepository.Save(path, list);
             MessageBox.Show("保存しました。");

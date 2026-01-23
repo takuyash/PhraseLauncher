@@ -14,8 +14,13 @@ namespace PhraseLauncher
 
         public static List<TemplateItem> Load(string file)
         {
-            return JsonSerializer.Deserialize<List<TemplateItem>>(
-                File.ReadAllText(file).Replace("\r\n", "\n"));
+            if (Path.GetFileNameWithoutExtension(file) == "groups")
+                return new List<TemplateItem>();
+
+            var json = File.ReadAllText(file).Replace("\r\n", "\n");
+
+            return JsonSerializer.Deserialize<List<TemplateItem>>(json)
+                   ?? new List<TemplateItem>();
         }
 
         public static void Save(string file, List<TemplateItem> list)

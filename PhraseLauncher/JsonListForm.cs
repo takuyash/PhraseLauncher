@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Windows.Forms;
 using Timer = System.Windows.Forms.Timer;
@@ -11,6 +12,9 @@ namespace PhraseLauncher
     {
         public static List<List<TemplateItem>> AllTemplates = new();
 
+        private static string GroupOrderPath =>
+            Path.Combine(TemplateRepository.JsonFolder, "groups.json");
+
         public static void Show()
         {
             if (Program.JsonForm != null && !Program.JsonForm.IsDisposed)
@@ -20,10 +24,48 @@ namespace PhraseLauncher
             }
 
             Directory.CreateDirectory(TemplateRepository.JsonFolder);
-            var files = Directory.GetFiles(TemplateRepository.JsonFolder, "*.json");
+
+            // ===============================
+            // groups.json 読み込み
+            // ===============================
+            List<string> groupOrder = new();
+            if (File.Exists(GroupOrderPath))
+            {
+                try
+                {
+                    groupOrder = JsonSerializer.Deserialize<List<string>>(
+                        File.ReadAllText(GroupOrderPath)
+                    ) ?? new List<string>();
+                }
+                catch
+                {
+                    groupOrder = new List<string>();
+                }
+            }
+
+            // ===============================
+            // ファイル一覧（groups.json除外）
+            // ＋ groups.json の順で並び替え
+            // ===============================
+            var files = Directory.GetFiles(TemplateRepository.JsonFolder, "*.json")
+                .Where(f => Path.GetFileName(f) != "groups.json")
+                .OrderBy(f =>
+                {
+                    var name = Path.GetFileNameWithoutExtension(f);
+                    int index = groupOrder.IndexOf(name);
+                    return index == -1 ? int.MaxValue : index;
+                })
+                .ThenBy(f => Path.GetFileNameWithoutExtension(f)) // 保険
+                .ToArray();
+
             if (files.Length == 0)
             {
-                MessageBox.Show("定型文の登録がありません。タスクトレイのアプリを右クリックして、定型文を登録してください。");
+                MessageBox.Show(
+                    "定型文の登録がありません。\nタスクトレイのアプリを右クリックして登録してください。",
+                    "PhraseLauncher",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information
+                );
                 return;
             }
 
@@ -41,7 +83,7 @@ namespace PhraseLauncher
 
             Program.JsonForm = form;
 
-            form.KeyDown += (s, e) =>
+            form.KeyDown += (_, e) =>
             {
                 if (e.KeyCode == Keys.Escape)
                 {
@@ -52,9 +94,28 @@ namespace PhraseLauncher
 
             TabControl tab = new() { Dock = DockStyle.Fill };
 
+            // ===============================
+            // タブ生成
+            // ===============================
             foreach (var file in files)
             {
-                var list = TemplateRepository.Load(file);
+                List<TemplateItem> list;
+
+                try
+                {
+                    list = TemplateRepository.Load(file) ?? new List<TemplateItem>();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(
+                        $"{Path.GetFileName(file)} の読み込みに失敗しました。\n\n{ex.Message}",
+                        "JSONエラー",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning
+                    );
+                    continue;
+                }
+
                 AllTemplates.Add(list);
 
                 ListBox lb = new()
@@ -65,18 +126,21 @@ namespace PhraseLauncher
 
                 ToolTip tip = new();
 
-                lb.MouseMove += (s, e) =>
+                lb.MouseMove += (_, e) =>
                 {
                     int i = lb.IndexFromPoint(e.Location);
                     if (i >= 0 && i < list.Count)
-                        tip.SetToolTip(lb, list[i].note);
+                        tip.SetToolTip(lb, list[i].note ?? "");
                 };
 
                 for (int i = 0; i < list.Count; i++)
-                    lb.Items.Add($"{GetShortcutLabel(i)}: {list[i].text.Replace("\n", " ")}");
+                {
+                    string text = list[i].text ?? "";
+                    lb.Items.Add($"{GetShortcutLabel(i)}: {text.Replace("\n", " ")}");
+                }
 
-                // ▲▼キー + Enter対応
-                lb.KeyDown += (s, e) =>
+                // ▲▼ + Enter
+                lb.KeyDown += (_, e) =>
                 {
                     if (e.KeyCode == Keys.Up && lb.SelectedIndex == 0)
                     {
@@ -92,18 +156,29 @@ namespace PhraseLauncher
                     }
                 };
 
-                // ダブルクリック対応
-                lb.DoubleClick += (s, e) =>
+                // ダブルクリック
+                lb.DoubleClick += (_, _) =>
                 {
                     ExecuteSelected(lb, list, form);
                 };
 
-                TabPage page = new(Path.GetFileNameWithoutExtension(file));
+                var page = new TabPage(Path.GetFileNameWithoutExtension(file));
                 page.Controls.Add(lb);
                 tab.TabPages.Add(page);
             }
 
-            tab.KeyDown += (s, e) =>
+            if (tab.TabPages.Count == 0)
+            {
+                MessageBox.Show(
+                    "有効な定型文がありません。",
+                    "PhraseLauncher",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information
+                );
+                return;
+            }
+
+            tab.KeyDown += (_, e) =>
             {
                 if (!tab.Focused) return;
 
@@ -120,8 +195,8 @@ namespace PhraseLauncher
             form.Controls.Add(tab);
             form.Show();
 
-            if (tab.TabPages.Count > 0 &&
-                tab.TabPages[0].Controls[0] is ListBox first &&
+            // 初期フォーカス
+            if (tab.TabPages[0].Controls[0] is ListBox first &&
                 first.Items.Count > 0)
             {
                 first.SelectedIndex = 0;
@@ -133,7 +208,7 @@ namespace PhraseLauncher
         {
             if (lb.SelectedIndex < 0) return;
 
-            string text = list[lb.SelectedIndex].text;
+            string text = list[lb.SelectedIndex].text ?? "";
 
             Clipboard.SetText(text);
 
@@ -141,7 +216,7 @@ namespace PhraseLauncher
             Program.JsonForm = null;
 
             Timer t = new() { Interval = 50 };
-            t.Tick += (s, e) =>
+            t.Tick += (_, _) =>
             {
                 t.Stop();
                 t.Dispose();
@@ -154,12 +229,14 @@ namespace PhraseLauncher
         {
             if (index < 9) return (index + 1).ToString();
             index -= 9;
+
             string s = "";
             do
             {
                 s = (char)('a' + index % 26) + s;
                 index = index / 26 - 1;
             } while (index >= 0);
+
             return s;
         }
     }

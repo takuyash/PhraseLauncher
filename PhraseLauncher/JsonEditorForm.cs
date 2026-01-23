@@ -31,6 +31,7 @@ namespace PhraseLauncher
 
             Button newBtn = new() { Text = "新規作成", Left = 320, Top = 10, Width = 80 };
             Button renameBtn = new() { Text = "グループ名変更", Left = 410, Top = 10, Width = 90 };
+            Button deleteGroupBtn = new() { Text = "グループ削除", Left = 590, Top = 10, Width = 90 };
 
             Button groupUpBtn = new() { Text = "▲", Left = 500, Top = 10, Width = 40 };
             Button groupDownBtn = new() { Text = "▼", Left = 545, Top = 10, Width = 40 };
@@ -82,6 +83,8 @@ namespace PhraseLauncher
 
             newBtn.Click += (s, e) => CreateNewFile();
             renameBtn.Click += (s, e) => RenameFile();
+            deleteGroupBtn.Click += (s, e) => DeleteGroup();
+
             upBtn.Click += (s, e) => MoveRow(-1);
             downBtn.Click += (s, e) => MoveRow(1);
 
@@ -93,7 +96,7 @@ namespace PhraseLauncher
 
             Controls.AddRange(new Control[]
             {
-                fileCombo, newBtn, renameBtn,
+                fileCombo, newBtn, renameBtn, deleteGroupBtn,
                 groupUpBtn, groupDownBtn,
                 dgv, saveBtn, delBtn, upBtn, downBtn
             });
@@ -109,7 +112,7 @@ namespace PhraseLauncher
 
             var files = Directory.GetFiles(TemplateRepository.JsonFolder, "*.json")
                 .Select(f => Path.GetFileNameWithoutExtension(f))
-                .Where(name => name != "groups") // ← これ重要
+                .Where(name => name != "groups")
                 .ToList();
 
             foreach (var name in order.ToList())
@@ -123,7 +126,6 @@ namespace PhraseLauncher
 
             SaveGroupOrder();
         }
-
 
         private List<string> LoadGroupOrder()
         {
@@ -161,6 +163,36 @@ namespace PhraseLauncher
             fileCombo.SelectedIndex = ni;
 
             SaveGroupOrder();
+        }
+
+        private void DeleteGroup()
+        {
+            if (string.IsNullOrEmpty(fileCombo.Text)) return;
+
+            string name = fileCombo.Text;
+
+            if (MessageBox.Show(
+                $"グループ「{name}」を削除しますか？\n定型文もすべて消えます。",
+                "確認",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning) != DialogResult.Yes)
+                return;
+
+            string path = Path.Combine(
+                TemplateRepository.JsonFolder, name + ".json");
+
+            if (File.Exists(path))
+                File.Delete(path);
+
+            int index = fileCombo.SelectedIndex;
+
+            fileCombo.Items.Remove(name);
+            SaveGroupOrder();
+
+            dgv.Rows.Clear();
+
+            if (fileCombo.Items.Count > 0)
+                fileCombo.SelectedIndex = Math.Min(index, fileCombo.Items.Count - 1);
         }
 
         /* ================= 定型文 ================= */

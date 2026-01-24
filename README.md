@@ -1,5 +1,95 @@
 # PhraseLauncher(フレーズランチャー)
 
+A phrase launcher that lets you input predefined text quickly.
+
+On Windows, you can use **Windows key + V** to access clipboard history and pin items. However, it has several limitations:
+
+1. You can only register a small number of items  
+2. It is not specialized for predefined phrases  
+3. You cannot input phrases quickly via shortcuts (you need to use the mouse or scroll to select)  
+4. You cannot organize items into groups  
+
+Because of these frustrations, I created a tool specialized specifically for predefined phrases.
+
+## Screen Preview
+<img src="screenshots/launcher.png" width="40%">
+
+## System Requirements
+- Windows 11
+
+## How to Use (Quick Start)
+
+0. Download the latest version  
+   https://github.com/takuyash/PhraseLauncher/releases  
+
+1. Run the `.exe` file — the app will stay resident in the system tray  
+
+2. Right-click the system tray icon to open the settings screen  
+   From there, you can register groups and predefined phrases  
+
+3. Launch the phrase launcher using either:  
+   - Press **Ctrl** twice in a row  
+   - **Ctrl + Shift + O**  
+
+4. Each displayed item has a key assigned to it  
+   Simply press the corresponding key to input the phrase instantly—no mouse or cursor movement required  
+
+## How to Launch
+- Run the `.exe` file to keep the app resident in the system tray  
+- Right-click the tray icon to open the settings screen  
+- Press **Ctrl** twice or **Ctrl + Shift + O** to display the launcher  
+
+## Features
+
+1. Ultra-fast input with key assignments (0–9 + A–Z)  
+   Each displayed phrase is automatically assigned a key from **0–9** or **A–Z**.  
+   Pressing the key instantly inserts the phrase.  
+
+2. Keyword search  
+   Quickly find phrases using keyword search.  
+
+3. Phrase editing and registration  
+   You can insert line breaks using **Shift + Enter**.  
+
+4. Grouping functionality  
+   - Register, edit, delete, and reorder phrases per group  
+   - Edit, delete, and reorder group names  
+
+5. No unnecessary settings  
+   A simple application without redundant configuration options.  
+
+6. Simple, fast, and lightweight  
+   - Clean and minimal UI  
+   - Extremely low rendering cost  
+   - Runs as a portable `.exe`  
+
+7. Close the launcher with the **Esc** key  
+   You can instantly close the launcher screen by pressing **Esc**.  
+
+## Screenshots
+
+### Launcher Screen
+<img src="screenshots/launcher.png" width="40%">
+
+### Phrase Registration Screen
+<img src="screenshots/PhraseSetting.png" width="40%">
+
+## Disclaimer
+
+The author assumes no responsibility for any damages resulting from the use of this software.  
+Please use it at your own risk.
+
+## Support
+
+If you find this software useful,  
+a ⭐ **Star** or 👀 **Watch** on GitHub would be greatly appreciated and very motivating!
+
+Feedback and Issues are always welcome.
+
+
+
+# PhraseLauncher(フレーズランチャー)
+
 定型文を素早く入力できる定型文ランチャー
 
 Windowsでは、Windowsキー + Vでクリップボードの履歴の入力やピン留めができますが  

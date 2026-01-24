@@ -202,13 +202,33 @@ namespace PhraseLauncher
             {
                 if (!tab.Focused) return;
 
-                if (e.KeyCode == Keys.Down &&
-                    tab.SelectedTab.Controls[0] is ListBox targetLb &&
-                    targetLb.Items.Count > 0)
+                if (tab.SelectedTab.Controls[0] is ListBox targetLb && targetLb.Items.Count > 0)
                 {
-                    targetLb.Focus();
-                    targetLb.SelectedIndex = 0;
-                    e.Handled = true;
+                    // 下矢印でフォーカス移動
+                    if (e.KeyCode == Keys.Down)
+                    {
+                        targetLb.Focus();
+                        targetLb.SelectedIndex = 0;
+                        e.Handled = true;
+                        return;
+                    }
+
+                    // タブにフォーカスがある状態でもショートカット(1-9, A-Z)を処理
+                    int targetIndex = -1;
+                    if (e.KeyCode >= Keys.D1 && e.KeyCode <= Keys.D9)
+                        targetIndex = e.KeyCode - Keys.D1;
+                    else if (e.KeyCode >= Keys.NumPad1 && e.KeyCode <= Keys.NumPad9)
+                        targetIndex = e.KeyCode - Keys.NumPad1;
+                    else if (e.KeyCode >= Keys.A && e.KeyCode <= Keys.Z)
+                        targetIndex = (e.KeyCode - Keys.A) + 9;
+
+                    if (targetIndex >= 0 && targetIndex < AllTemplates[tab.SelectedIndex].Count && targetIndex <= 34)
+                    {
+                        targetLb.SelectedIndex = targetIndex;
+                        ExecuteSelected(targetLb, AllTemplates[tab.SelectedIndex], form);
+                        e.Handled = true;
+                        e.SuppressKeyPress = true;
+                    }
                 }
             };
 

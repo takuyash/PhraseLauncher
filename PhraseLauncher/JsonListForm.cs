@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Windows.Forms;
 using Timer = System.Windows.Forms.Timer;
@@ -10,6 +11,10 @@ namespace PhraseLauncher
 {
     static class JsonListForm
     {
+        // ウィンドウを強制的に最前面に持ってくるためのWin32 API
+        [DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
         public static List<List<TemplateItem>> AllTemplates = new();
 
         private static string GroupOrderPath =>
@@ -20,6 +25,7 @@ namespace PhraseLauncher
             if (Program.JsonForm != null && !Program.JsonForm.IsDisposed)
             {
                 Program.JsonForm.BringToFront();
+                Program.JsonForm.Activate(); // 既存ウィンドウがある場合もアクティブ化
                 return;
             }
 
@@ -55,7 +61,7 @@ namespace PhraseLauncher
                     int index = groupOrder.IndexOf(name);
                     return index == -1 ? int.MaxValue : index;
                 })
-                .ThenBy(f => Path.GetFileNameWithoutExtension(f)) // 保険
+                .ThenBy(f => Path.GetFileNameWithoutExtension(f))
                 .ToArray();
 
             if (files.Length == 0)
@@ -193,11 +199,18 @@ namespace PhraseLauncher
             };
 
             form.Controls.Add(tab);
+
+            // ===============================
+            // 確実にフォーカスを当てる処理
+            // ===============================
             form.Show();
 
-            // 初期フォーカス
-            if (tab.TabPages[0].Controls[0] is ListBox first &&
-                first.Items.Count > 0)
+            // OSにウィンドウを前面に出すよう強制
+            SetForegroundWindow(form.Handle);
+            form.Activate();
+
+            // 初期フォーカス設定
+            if (tab.TabPages.Count > 0 && tab.TabPages[0].Controls[0] is ListBox first && first.Items.Count > 0)
             {
                 first.SelectedIndex = 0;
                 first.Focus();

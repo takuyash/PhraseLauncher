@@ -3,7 +3,9 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Reflection;
 using System.Windows.Forms;
-
+using System.Net.Http;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace PhraseLauncher
 {
@@ -51,6 +53,9 @@ namespace PhraseLauncher
             panel.Controls.Add(CreateLink("GitHub リポジトリ", GitHubRepoUrl));
             panel.Controls.Add(CreateLink("ヘルプ / 使い方", HelpUrl));
             panel.Controls.Add(CreateLink("ライセンス", LicenseUrl));
+
+            // 非同期でチェック
+            this.Load += async (s, e) => await CheckForUpdateAsync(panel);
         }
 
         private string GetVersion()
@@ -77,6 +82,55 @@ namespace PhraseLauncher
             };
 
             return link;
+        }
+
+        private async Task CheckForUpdateAsync(Control parent)
+        {
+            try
+            {
+                using var client = new HttpClient();
+                client.DefaultRequestHeaders.UserAgent.ParseAdd("PhraseLauncher");
+
+                var json = await client.GetStringAsync(
+                    "https://api.github.com/repos/takuyash/PhraseLauncher/releases/latest");
+
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+
+                var tag = root.GetProperty("tag_name").GetString();
+                var url = root.GetProperty("html_url").GetString();
+
+                if (string.IsNullOrEmpty(tag)) return;
+
+                var latest = new Version(tag.TrimStart('v', 'V'));
+                var current = Assembly.GetExecutingAssembly().GetName().Version;
+
+                if (current != null && latest > current)
+                {
+                    var link = new LinkLabel()
+                    {
+                        Text = $"新しいバージョンがあります（v{latest}）",
+                        AutoSize = true,
+                        LinkColor = Color.DarkRed,
+                        Margin = new Padding(0, 15, 0, 0)
+                    };
+
+                    link.LinkClicked += (s, e) =>
+                    {
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = url,
+                            UseShellExecute = true
+                        });
+                    };
+
+                    parent.Controls.Add(link);
+                }
+            }
+            catch
+            {
+                // 失敗しても何もしない
+            }
         }
     }
 }

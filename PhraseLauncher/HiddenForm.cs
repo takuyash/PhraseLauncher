@@ -110,14 +110,35 @@ namespace PhraseLauncher
         {
             if (Program.JsonForm == null || Program.JsonForm.IsDisposed) return;
 
-            var tab = Program.JsonForm.Controls[0] as TabControl;
-            var list = JsonListForm.AllTemplates[tab.SelectedIndex];
+            // --- 検索入力中のショートカット無効化ロジック ---
+            // フォーム内で現在フォーカスを持っているコントロールを確認
+            Control focusedControl = GetFocusedControl(Program.JsonForm);
+            if (focusedControl is TextBox) return; // 検索中は何もしない
+
+            var tab = Program.JsonForm.Controls.Find("tab", true);
+            if (tab.Length == 0 || !(tab[0] is TabControl tabCtrl)) return;
+
+            var lb = tabCtrl.SelectedTab.Controls[0] as ListBox;
+            if (lb == null || lb.Tag == null) return;
+
+            var currentList = lb.Tag as List<TemplateItem>;
+            if (currentList == null) return;
 
             for (int i = 0; i < 9; i++)
             {
-                HandleKey((Keys)(Keys.D1 + i), i, list);
-                HandleKey((Keys)(Keys.NumPad1 + i), i, list);
+                HandleKey((Keys)(Keys.D1 + i), i, currentList);
+                HandleKey((Keys)(Keys.NumPad1 + i), i, currentList);
             }
+        }
+
+        // フォーム内のどの子コントロールにフォーカスがあるか再帰的に取得
+        private Control GetFocusedControl(Control parent)
+        {
+            if (parent is ContainerControl container)
+            {
+                return GetFocusedControl(container.ActiveControl) ?? container;
+            }
+            return parent;
         }
 
         void HandleKey(Keys key, int index, List<TemplateItem> list)

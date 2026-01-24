@@ -142,12 +142,23 @@ namespace PhraseLauncher
                 for (int i = 0; i < list.Count; i++)
                 {
                     string text = list[i].text ?? "";
-                    lb.Items.Add($"{GetShortcutLabel(i)}: {text.Replace("\n", " ")}");
+                    string label = GetShortcutLabel(i);
+                    string prefix = string.IsNullOrEmpty(label) ? "" : $"{label}: ";
+                    lb.Items.Add($"{prefix}{text.Replace("\n", " ")}");
                 }
 
                 // ▲▼ + Enter
                 lb.KeyDown += (_, e) =>
                 {
+                    // 1. Enterキーの処理
+                    if (e.KeyCode == Keys.Enter)
+                    {
+                        ExecuteSelected(lb, list, form);
+                        e.Handled = true;
+                        return;
+                    }
+
+                    // 2. 上矢印キーでタブへフォーカス移動
                     if (e.KeyCode == Keys.Up && lb.SelectedIndex == 0)
                     {
                         tab.Focus();
@@ -155,10 +166,22 @@ namespace PhraseLauncher
                         return;
                     }
 
-                    if (e.KeyCode == Keys.Enter)
+                    // 3. ショートカットキー(1-9, A-Z)の判定
+                    int targetIndex = -1;
+                    if (e.KeyCode >= Keys.D1 && e.KeyCode <= Keys.D9)
+                        targetIndex = e.KeyCode - Keys.D1;
+                    else if (e.KeyCode >= Keys.NumPad1 && e.KeyCode <= Keys.NumPad9)
+                        targetIndex = e.KeyCode - Keys.NumPad1;
+                    else if (e.KeyCode >= Keys.A && e.KeyCode <= Keys.Z)
+                        targetIndex = (e.KeyCode - Keys.A) + 9;
+
+                    // 範囲内かつラベルが存在するインデックスなら実行
+                    if (targetIndex >= 0 && targetIndex < list.Count && targetIndex <= 34)
                     {
+                        lb.SelectedIndex = targetIndex;
                         ExecuteSelected(lb, list, form);
                         e.Handled = true;
+                        e.SuppressKeyPress = true; // ビープ音防止
                     }
                 };
 
@@ -173,27 +196,18 @@ namespace PhraseLauncher
                 tab.TabPages.Add(page);
             }
 
-            if (tab.TabPages.Count == 0)
-            {
-                MessageBox.Show(
-                    "有効な定型文がありません。",
-                    "PhraseLauncher",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information
-                );
-                return;
-            }
+            if (tab.TabPages.Count == 0) return;
 
             tab.KeyDown += (_, e) =>
             {
                 if (!tab.Focused) return;
 
                 if (e.KeyCode == Keys.Down &&
-                    tab.SelectedTab.Controls[0] is ListBox lb &&
-                    lb.Items.Count > 0)
+                    tab.SelectedTab.Controls[0] is ListBox targetLb &&
+                    targetLb.Items.Count > 0)
                 {
-                    lb.Focus();
-                    lb.SelectedIndex = 0;
+                    targetLb.Focus();
+                    targetLb.SelectedIndex = 0;
                     e.Handled = true;
                 }
             };
@@ -219,7 +233,7 @@ namespace PhraseLauncher
 
         private static void ExecuteSelected(ListBox lb, List<TemplateItem> list, Form form)
         {
-            if (lb.SelectedIndex < 0) return;
+            if (lb.SelectedIndex < 0 || lb.SelectedIndex >= list.Count) return;
 
             string text = list[lb.SelectedIndex].text ?? "";
 
@@ -240,17 +254,17 @@ namespace PhraseLauncher
 
         static string GetShortcutLabel(int index)
         {
+            // 1-9 (index 0-8)
             if (index < 9) return (index + 1).ToString();
-            index -= 9;
 
-            string s = "";
-            do
+            // a-z (index 9-34)
+            if (index <= 34)
             {
-                s = (char)('a' + index % 26) + s;
-                index = index / 26 - 1;
-            } while (index >= 0);
+                return ((char)('a' + (index - 9))).ToString();
+            }
 
-            return s;
+            // それ以降は割り振らない
+            return "";
         }
     }
 }

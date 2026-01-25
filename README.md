@@ -79,6 +79,17 @@ Because of these frustrations, I created a tool specialized specifically for pre
 The author assumes no responsibility for any damages resulting from the use of this software.  
 Please use it at your own risk.
 
+---
+
+## License and Terms of Use
+
+
+This software is freeware.  
+It is released under the MIT License.  
+**It may be used free of charge for both personal and commercial purposes.**
+However, the author assumes no responsibility for any damages that may occur as a result of using this software.  
+Please use it at your own risk.  
+
 ## Support
 
 If you find this software useful,  
@@ -159,6 +170,15 @@ Shift + Enter で改行も入力できます。
 ## 免責事項
 
 本ソフトウェアを使用したことによって生じたいかなる損害についても、作者は一切の責任を負いません。  
+自己責任でご利用ください。  
+
+## ライセンス・利用条件
+
+
+本ソフトウェアはフリーソフトです。  
+MIT License のもとで公開されています。  
+**個人利用・商用利用を問わず、無料で使用することができます。**
+ただし、本ソフトウェアを使用したことによって生じたいかなる損害についても、作者は一切の責任を負いません。  
 自己責任でご利用ください。  
 
 ## 応援について

@@ -74,6 +74,18 @@ Because of these frustrations, I created a tool specialized specifically for pre
 ### Phrase Registration Screen
 <img src="screenshots/PhraseSetting.png" width="40%">
 
+---
+
+## Updating the Application
+
+To update, download the new version and overwrite the existing folder.
+
+**Update steps:**
+1. Exit SimpleFolderLauncher  
+2. Download the new ZIP file  
+3. Overwrite the existing folder  
+4. Launch the application  
+
 ## Disclaimer
 
 The author assumes no responsibility for any damages resulting from the use of this software.  
@@ -166,6 +178,14 @@ Shift + Enter で改行も入力できます。
 
 ### 定型文登録画面  
    <img src="screenshots/PhraseSetting.png" width="40%">  
+
+## アプリ更新方法
+更新時は新しいバージョンをダウンロードして既存フォルダに上書きしてください。  
+アップデート方法  
+1. SimpleFolderLauncherを終了する  
+2. 新しいzipファイルをダウンロード  
+3. 既存フォルダに上書きする  
+4. 起動する  
 
 ## 免責事項
 

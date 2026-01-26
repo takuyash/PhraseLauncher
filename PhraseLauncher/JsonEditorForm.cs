@@ -22,6 +22,7 @@ namespace PhraseLauncher
             Height = 500;
             Text = "定型文編集・登録";
             StartPosition = FormStartPosition.CenterScreen;
+            this.Icon = Program.AppIcon;
 
             fileCombo.DropDownStyle = ComboBoxStyle.DropDownList;
 

@@ -1,35 +1,70 @@
-using PhraseLauncher;
 using System;
+using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 
-static class Program
+namespace PhraseLauncher
 {
-    public static HiddenForm HiddenForm;
-    public static Form JsonForm;
-
-    [STAThread]
-    static void Main()
+    static class Program
     {
-        Application.EnableVisualStyles();
-        Application.SetCompatibleTextRenderingDefault(false);
+        public static KeyboardManager KbdManager;
+        public static Form JsonForm;
+        public static NotifyIcon TrayIcon;
 
-        NotifyIcon tray = new()
+        // どこからでも参照できるアイコンオブジェクト
+        public static Icon AppIcon;
+
+        [STAThread]
+        static void Main()
         {
-            Icon = new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "icon.ico")),
-            Visible = true,
-            Text = "PhraseLauncher"
-        };
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
 
-        ContextMenuStrip menu = new();
-        menu.Items.Add(new ToolStripMenuItem("一覧表示", null, (s, e) => JsonListForm.Show()));
-        menu.Items.Add(new ToolStripMenuItem("編集/登録", null, (s, e) => new JsonEditorForm().Show()));
-        menu.Items.Add(new ToolStripMenuItem("ヘルプ", null, (s, e) => new HelpForm().Show()));
-        menu.Items.Add(new ToolStripMenuItem("終了", null, (s, e) => Application.Exit()));
-        tray.ContextMenuStrip = menu;
+            // アイコンを一度だけ読み込む
+            AppIcon = LoadIcon("icon.ico");
 
-        HiddenForm = new HiddenForm { ShowInTaskbar = false, Opacity = 0 };
-        HiddenForm.Show();
+            // タスクトレイの設定
+            TrayIcon = new NotifyIcon
+            {
+                Icon = AppIcon,
+                Visible = true,
+                Text = "PhraseLauncher"
+            };
 
-        Application.Run();
+            // メニュー作成
+            ContextMenuStrip menu = new();
+            menu.Items.Add(new ToolStripMenuItem("一覧表示", null, (s, e) => JsonListForm.Show()));
+            menu.Items.Add(new ToolStripMenuItem("編集/登録", null, (s, e) => new JsonEditorForm().Show()));
+            menu.Items.Add(new ToolStripMenuItem("ヘルプ", null, (s, e) => new HelpForm().Show()));
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add(new ToolStripMenuItem("終了", null, (s, e) => ExitApplication()));
+            TrayIcon.ContextMenuStrip = menu;
+
+            // キーボード監視開始
+            KbdManager = new KeyboardManager();
+
+            Application.Run();
+        }
+
+        private static Icon LoadIcon(string fileName)
+        {
+            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileName);
+            if (File.Exists(path))
+            {
+                try { return new Icon(path); } catch { }
+            }
+            return Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+        }
+
+        public static void ExitApplication()
+        {
+            KbdManager?.Dispose();
+            if (TrayIcon != null)
+            {
+                TrayIcon.Visible = false;
+                TrayIcon.Dispose();
+            }
+            Application.Exit();
+        }
     }
 }

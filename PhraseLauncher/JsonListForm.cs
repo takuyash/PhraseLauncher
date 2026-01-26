@@ -20,6 +20,7 @@ namespace PhraseLauncher
         private static string GroupOrderPath =>
             Path.Combine(TemplateRepository.JsonFolder, "groups.json");
 
+
         public static void Show()
         {
             if (Program.JsonForm != null && !Program.JsonForm.IsDisposed)
@@ -84,7 +85,8 @@ namespace PhraseLauncher
                 TopMost = true,
                 Text = "定型文一覧",
                 KeyPreview = true,
-                StartPosition = FormStartPosition.CenterScreen
+                StartPosition = FormStartPosition.CenterScreen,
+                Icon = Program.AppIcon
             };
 
             Program.JsonForm = form;
@@ -144,7 +146,7 @@ namespace PhraseLauncher
                     if (idx >= 0 && items != null && idx < items.Count)
                         tip.SetToolTip(lb, items[idx].note ?? "");
                 };
-               // ▲▼ + Enter
+                // ▲▼ + Enter
                 lb.KeyDown += (s, e) =>
                 {
                     var items = lb.Tag as List<TemplateItem>;
@@ -154,7 +156,7 @@ namespace PhraseLauncher
                         ExecuteSelected(lb, items, form);
                         e.Handled = true;
                     }
-                     // 2. 上矢印キーでタブへフォーカス移動
+                    // 2. 上矢印キーでタブへフォーカス移動
                     else if (e.KeyCode == Keys.Up && lb.SelectedIndex <= 0)
                     {
                         tab.Focus();
@@ -173,7 +175,7 @@ namespace PhraseLauncher
                         }
                     }
                 };
-// ダブルクリック
+                // ダブルクリック
                 lb.DoubleClick += (s, e) => { if (lb.Tag is List<TemplateItem> items) ExecuteSelected(lb, items, form); };
 
                 var page = new TabPage(Path.GetFileNameWithoutExtension(files[i]));

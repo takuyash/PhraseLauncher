@@ -7,41 +7,42 @@ using Timer = System.Windows.Forms.Timer;
 
 namespace PhraseLauncher
 {
-    class HiddenForm : Form
+    // FormではなくNativeWindowを使うことで「隠し画面」を不要にします
+    class KeyboardManager : NativeWindow, IDisposable
     {
-        Timer timer = new() { Interval = 50 };
-        HashSet<Keys> pressed = new();
-
-        // --- Hook Fields ---
-        private static IntPtr _hookID = IntPtr.Zero;
+        private Timer _timer = new() { Interval = 50 };
+        private HashSet<Keys> _pressedKeys = new();
+        private IntPtr _hookID = IntPtr.Zero;
         private NativeMethods.LowLevelKeyboardProc _proc;
+
         private DateTime _lastCtrlTime = DateTime.MinValue;
         private const int DOUBLE_PRESS_MS = 300;
         private bool _isCtrlPressed = false;
 
-        public HiddenForm()
+        public KeyboardManager()
         {
+            // ホットキー受信用のハンドルを作成
+            this.CreateHandle(new CreateParams());
+
             _proc = HookCallback;
+            _hookID = SetHook(_proc);
 
-            Load += (s, e) =>
+            // ホットキー登録 (Ctrl + Shift + O)
+            NativeMethods.RegisterHotKey(this.Handle, NativeMethods.HOTKEY_ID,
+                NativeMethods.MOD_CONTROL | NativeMethods.MOD_SHIFT, NativeMethods.VK_O);
+
+            _timer.Tick += OnTimerTick;
+            _timer.Start();
+        }
+
+        // メッセージループの監視（ホットキーはここで受け取る）
+        protected override void WndProc(ref Message m)
+        {
+            if (m.Msg == NativeMethods.WM_HOTKEY && (int)m.WParam == NativeMethods.HOTKEY_ID)
             {
-                NativeMethods.RegisterHotKey(
-                    Handle,
-                    NativeMethods.HOTKEY_ID,
-                    NativeMethods.MOD_CONTROL | NativeMethods.MOD_SHIFT,
-                    NativeMethods.VK_O);
-
-                _hookID = SetHook(_proc);
-            };
-
-            FormClosing += (s, e) =>
-            {
-                NativeMethods.UnregisterHotKey(Handle, NativeMethods.HOTKEY_ID);
-                NativeMethods.UnhookWindowsHookEx(_hookID);
-            };
-
-            timer.Tick += Tick;
-            timer.Start();
+                JsonListForm.Show();
+            }
+            base.WndProc(ref m);
         }
 
         private IntPtr SetHook(NativeMethods.LowLevelKeyboardProc proc)
@@ -60,16 +61,13 @@ namespace PhraseLauncher
             {
                 int vkCode = Marshal.ReadInt32(lParam);
 
-                // UP: 押し下げ状態解除
+                // Ctrlキーの判定 (Double Press用)
                 if (wParam == (IntPtr)NativeMethods.WM_KEYUP || wParam == (IntPtr)NativeMethods.WM_SYSKEYUP)
                 {
                     if (vkCode == NativeMethods.VK_LCONTROL || vkCode == NativeMethods.VK_RCONTROL)
-                    {
                         _isCtrlPressed = false;
-                    }
                 }
 
-                // DOWN: 判定
                 if (wParam == (IntPtr)NativeMethods.WM_KEYDOWN || wParam == (IntPtr)NativeMethods.WM_SYSKEYDOWN)
                 {
                     if (vkCode == NativeMethods.VK_LCONTROL || vkCode == NativeMethods.VK_RCONTROL)
@@ -83,83 +81,66 @@ namespace PhraseLauncher
                                 JsonListForm.Show();
                                 _lastCtrlTime = DateTime.MinValue;
                             }
-                            else
-                            {
-                                _lastCtrlTime = now;
-                            }
+                            else { _lastCtrlTime = now; }
                         }
                     }
-                    else
-                    {
-                        _lastCtrlTime = DateTime.MinValue;
-                    }
+                    else { _lastCtrlTime = DateTime.MinValue; }
                 }
             }
             return NativeMethods.CallNextHookEx(_hookID, nCode, wParam, lParam);
         }
 
-        protected override void WndProc(ref Message m)
+        private void OnTimerTick(object sender, EventArgs e)
         {
-            if (m.Msg == NativeMethods.WM_HOTKEY)
-                JsonListForm.Show();
-
-            base.WndProc(ref m);
-        }
-
-        void Tick(object sender, EventArgs e)
-        {
+            // JsonFormが開いていない、またはテキストボックスにフォーカスがある場合は無効
             if (Program.JsonForm == null || Program.JsonForm.IsDisposed) return;
-
-            // --- 検索入力中のショートカット無効化ロジック ---
-            // フォーム内で現在フォーカスを持っているコントロールを確認
-            Control focusedControl = GetFocusedControl(Program.JsonForm);
-            if (focusedControl is TextBox) return; // 検索中は何もしない
+            if (GetFocusedControl(Program.JsonForm) is TextBox) return;
 
             var tab = Program.JsonForm.Controls.Find("tab", true);
             if (tab.Length == 0 || !(tab[0] is TabControl tabCtrl)) return;
+            if (tabCtrl.SelectedTab.Controls.Count == 0) return;
 
             var lb = tabCtrl.SelectedTab.Controls[0] as ListBox;
-            if (lb == null || lb.Tag == null) return;
-
-            var currentList = lb.Tag as List<TemplateItem>;
-            if (currentList == null) return;
-
-            for (int i = 0; i < 9; i++)
+            if (lb?.Tag is List<TemplateItem> currentList)
             {
-                HandleKey((Keys)(Keys.D1 + i), i, currentList);
-                HandleKey((Keys)(Keys.NumPad1 + i), i, currentList);
+                for (int i = 0; i < 9; i++)
+                {
+                    HandleNumericKey((Keys)(Keys.D1 + i), i, currentList);
+                    HandleNumericKey((Keys)(Keys.NumPad1 + i), i, currentList);
+                }
             }
         }
 
-        // フォーム内のどの子コントロールにフォーカスがあるか再帰的に取得
-        private Control GetFocusedControl(Control parent)
-        {
-            if (parent is ContainerControl container)
-            {
-                return GetFocusedControl(container.ActiveControl) ?? container;
-            }
-            return parent;
-        }
-
-        void HandleKey(Keys key, int index, List<TemplateItem> list)
+        private void HandleNumericKey(Keys key, int index, List<TemplateItem> list)
         {
             if ((NativeMethods.GetAsyncKeyState(key) & 0x8000) != 0)
             {
-                if (!pressed.Contains(key))
+                if (!_pressedKeys.Contains(key))
                 {
-                    pressed.Add(key);
+                    _pressedKeys.Add(key);
                     if (index < list.Count)
                     {
                         PasteHelper.Paste(list[index].text);
                         Program.JsonForm.Close();
-                        Program.JsonForm = null;
                     }
                 }
             }
-            else
-            {
-                pressed.Remove(key);
-            }
+            else { _pressedKeys.Remove(key); }
+        }
+
+        private Control GetFocusedControl(Control parent)
+        {
+            if (parent is ContainerControl container && container.ActiveControl != null)
+                return GetFocusedControl(container.ActiveControl);
+            return parent;
+        }
+
+        public void Dispose()
+        {
+            _timer.Stop();
+            NativeMethods.UnregisterHotKey(this.Handle, NativeMethods.HOTKEY_ID);
+            NativeMethods.UnhookWindowsHookEx(_hookID);
+            this.DestroyHandle();
         }
     }
 }

@@ -25,6 +25,7 @@ Because of these frustrations, I created a tool specialized specifically for pre
 1. Run the `.exe` file — the app will stay resident in the system tray  
 
 2. Right-click the system tray icon to open the settings screen  
+   You can choose between Japanese and English as the language, so please choose whichever you prefer.  
    From there, you can register groups and predefined phrases  
 
 3. Launch the phrase launcher using either:  
@@ -65,6 +66,10 @@ Because of these frustrations, I created a tool specialized specifically for pre
 
 7. Close the launcher with the **Esc** key  
    You can instantly close the launcher screen by pressing **Esc**.  
+
+
+8. Available in Japanese and English
+You can switch between Japanese and English in the settings screen.  
 
 ## Screenshots
 
@@ -135,6 +140,7 @@ Windows 11
 1. exe を実行するとタスクトレイに常駐します  
 
 2. タスクトレイのアイコンを右クリックして、設定画面が開けます
+   言語は日本語と英語が選べるため好きなほうを選んでください。  
    グループの登録や定型文の登録ができるので登録を行ってください。  
    
 3. Ctrl 2回連続 もしくは Ctrl + Shift + O のショートカットでランチャーを呼び出すことができます  
@@ -171,6 +177,9 @@ Shift + Enter で改行も入力できます。
 
 7. escキーでランチャー画面を閉じる  
 ランチャー画面を閉じる時もescキーですぐに閉じることができます。  
+
+8. 日本語と英語で使用可能  
+設定画面で日本語と英語の切り替えが可能です。  
 
 ## 画面
 ### ランチャー画面  

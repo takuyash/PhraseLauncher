@@ -12,7 +12,7 @@ On Windows, you can use **Windows key + V** to access clipboard history and pin 
 Because of these frustrations, I created a tool specialized specifically for predefined phrases.
 
 ## Screen Preview
-<img src="screenshots/launcher.png" width="40%">
+<img src="screenshots/launcher_en.png" width="40%">
 
 ## System Requirements
 - Windows 11

@@ -11,14 +11,14 @@ namespace PhraseLauncher
 {
     static class JsonListForm
     {
-        // ウィンドウを強制的に最前面に持ってくるためのWin32 API
-        [DllImport("user32.dll")]
+        // ウィンドウを強制的に最前面に持ってくるためのWin32 API
+        [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
 
         public static List<List<TemplateItem>> AllTemplates = new();
 
         private static string GroupOrderPath =>
-            Path.Combine(TemplateRepository.JsonFolder, "groups.json");
+          Path.Combine(TemplateRepository.JsonFolder, "groups.json");
 
 
         public static void Show()
@@ -27,21 +27,21 @@ namespace PhraseLauncher
             {
                 Program.JsonForm.BringToFront();
                 Program.JsonForm.Activate(); // 既存ウィンドウがある場合もアクティブ化
-                return;
+                return;
             }
 
             Directory.CreateDirectory(TemplateRepository.JsonFolder);
 
-            // ===============================
-            // groups.json 読み込み
-            // ===============================
-            List<string> groupOrder = new();
+            // ===============================
+            // groups.json 読み込み
+            // ===============================
+            List<string> groupOrder = new();
             if (File.Exists(GroupOrderPath))
             {
                 try
                 {
                     groupOrder = JsonSerializer.Deserialize<List<string>>(
-                        File.ReadAllText(GroupOrderPath)
+                      File.ReadAllText(GroupOrderPath)
                     ) ?? new List<string>();
                 }
                 catch
@@ -50,28 +50,28 @@ namespace PhraseLauncher
                 }
             }
 
-            // ===============================
-            // ファイル一覧（groups.json除外）
-            // ＋ groups.json の順で並び替え
-            // ===============================
-            var files = Directory.GetFiles(TemplateRepository.JsonFolder, "*.json")
-                .Where(f => Path.GetFileName(f) != "groups.json")
-                .OrderBy(f =>
-                {
-                    var name = Path.GetFileNameWithoutExtension(f);
-                    int index = groupOrder.IndexOf(name);
-                    return index == -1 ? int.MaxValue : index;
-                })
-                .ThenBy(f => Path.GetFileNameWithoutExtension(f))
-                .ToArray();
+            // ===============================
+            // ファイル一覧（groups.json除外）
+            // ＋ groups.json の順で並び替え
+            // ===============================
+            var files = Directory.GetFiles(TemplateRepository.JsonFolder, "*.json")
+        .Where(f => Path.GetFileName(f) != "groups.json")
+        .OrderBy(f =>
+        {
+            var name = Path.GetFileNameWithoutExtension(f);
+            int index = groupOrder.IndexOf(name);
+            return index == -1 ? int.MaxValue : index;
+        })
+        .ThenBy(f => Path.GetFileNameWithoutExtension(f))
+        .ToArray();
 
             if (files.Length == 0)
             {
                 MessageBox.Show(
-                    "定型文の登録がありません。\nタスクトレイのアプリを右クリックして登録してください。",
-                    "PhraseLauncher",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information
+                  LanguageManager.GetString("ListEmpty"),
+                  "PhraseLauncher",
+                  MessageBoxButtons.OK,
+                  MessageBoxIcon.Information
                 );
                 return;
             }
@@ -83,7 +83,7 @@ namespace PhraseLauncher
                 Width = 500,
                 Height = 400,
                 TopMost = true,
-                Text = "定型文一覧",
+                Text = LanguageManager.GetString("ListTitle"),
                 KeyPreview = true,
                 StartPosition = FormStartPosition.CenterScreen,
                 Icon = Program.AppIcon
@@ -91,38 +91,43 @@ namespace PhraseLauncher
 
             Program.JsonForm = form;
 
-            // 検索パネル
-            Panel searchPanel = new() { Dock = DockStyle.Top, Height = 30, Padding = new Padding(5) };
+            // 言語変更時にタイトルを更新
+            Action updateTitle = () => form.Text = LanguageManager.GetString("ListTitle");
+            LanguageManager.LanguageChanged += updateTitle;
+            form.FormClosed += (s, e) => LanguageManager.LanguageChanged -= updateTitle;
+
+            // 検索パネル
+            Panel searchPanel = new() { Dock = DockStyle.Top, Height = 30, Padding = new Padding(5) };
             TextBox searchBox = new() { Dock = DockStyle.Fill };
             searchPanel.Controls.Add(searchBox);
 
             TabControl tab = new() { Dock = DockStyle.Fill };
 
-            // データのロード
-            List<List<TemplateItem>> originalData = new();
-            // ===============================
-            // タブ生成
-            // ===============================
-            foreach (var file in files)
+            // データのロード
+            List<List<TemplateItem>> originalData = new();
+            // ===============================
+            // タブ生成
+            // ===============================
+            foreach (var file in files)
             {
                 try { originalData.Add(TemplateRepository.Load(file) ?? new List<TemplateItem>()); }
                 catch { originalData.Add(new List<TemplateItem>()); }
             }
             AllTemplates = originalData;
 
-            // リスト更新用アクション
-            Action updateLists = () =>
+            // リスト更新用アクション
+            Action updateLists = () =>
             {
                 string query = searchBox.Text.ToLower();
                 for (int i = 0; i < tab.TabPages.Count; i++)
                 {
                     var lb = tab.TabPages[i].Controls[0] as ListBox;
                     var filtered = originalData[i]
-                        .Where(x => (x.text ?? "").ToLower().Contains(query) || (x.note ?? "").ToLower().Contains(query))
-                        .ToList();
+                      .Where(x => (x.text ?? "").ToLower().Contains(query) || (x.note ?? "").ToLower().Contains(query))
+                      .ToList();
 
                     lb.Tag = filtered; // 現在の表示データを保持
-                    lb.Items.Clear();
+                    lb.Items.Clear();
                     for (int j = 0; j < filtered.Count; j++)
                     {
                         string label = GetShortcutLabel(j);
@@ -134,8 +139,8 @@ namespace PhraseLauncher
 
             searchBox.TextChanged += (s, e) => updateLists();
 
-            // タブとリストの生成
-            for (int i = 0; i < files.Length; i++)
+            // タブとリストの生成
+            for (int i = 0; i < files.Length; i++)
             {
                 ListBox lb = new() { Dock = DockStyle.Fill, IntegralHeight = false };
                 ToolTip tip = new();
@@ -146,26 +151,26 @@ namespace PhraseLauncher
                     if (idx >= 0 && items != null && idx < items.Count)
                         tip.SetToolTip(lb, items[idx].note ?? "");
                 };
-                // ▲▼ + Enter
-                lb.KeyDown += (s, e) =>
+                // ▲▼ + Enter
+                lb.KeyDown += (s, e) =>
                 {
                     var items = lb.Tag as List<TemplateItem>;
-                    // 1. Enterキーの処理
-                    if (e.KeyCode == Keys.Enter && items != null)
+                    // 1. Enterキーの処理
+                    if (e.KeyCode == Keys.Enter && items != null)
                     {
                         ExecuteSelected(lb, items, form);
                         e.Handled = true;
                     }
-                    // 2. 上矢印キーでタブへフォーカス移動
-                    else if (e.KeyCode == Keys.Up && lb.SelectedIndex <= 0)
+                    // 2. 上矢印キーでタブへフォーカス移動
+                    else if (e.KeyCode == Keys.Up && lb.SelectedIndex <= 0)
                     {
                         tab.Focus();
                         e.Handled = true;
                     }
                     else
                     {
-                        // ショートカット
-                        int targetIndex = GetIndexFromKey(e.KeyCode);
+                        // ショートカット
+                        int targetIndex = GetIndexFromKey(e.KeyCode);
                         if (targetIndex >= 0 && items != null && targetIndex < items.Count)
                         {
                             lb.SelectedIndex = targetIndex;
@@ -175,16 +180,16 @@ namespace PhraseLauncher
                         }
                     }
                 };
-                // ダブルクリック
-                lb.DoubleClick += (s, e) => { if (lb.Tag is List<TemplateItem> items) ExecuteSelected(lb, items, form); };
+                // ダブルクリック
+                lb.DoubleClick += (s, e) => { if (lb.Tag is List<TemplateItem> items) ExecuteSelected(lb, items, form); };
 
                 var page = new TabPage(Path.GetFileNameWithoutExtension(files[i]));
                 page.Controls.Add(lb);
                 tab.TabPages.Add(page);
             }
 
-            // 検索ボックスのキー制御
-            searchBox.KeyDown += (s, e) =>
+            // 検索ボックスのキー制御
+            searchBox.KeyDown += (s, e) =>
             {
                 if (e.KeyCode == Keys.Down || e.KeyCode == Keys.Enter)
                 {
@@ -193,8 +198,8 @@ namespace PhraseLauncher
                 }
             };
 
-            // タブのキー制御
-            tab.KeyDown += (s, e) =>
+            // タブのキー制御
+            tab.KeyDown += (s, e) =>
             {
                 if (!tab.Focused) return;
                 var lb = tab.SelectedTab.Controls[0] as ListBox;
@@ -212,12 +217,12 @@ namespace PhraseLauncher
                 }
                 else if (e.KeyCode == Keys.Left || e.KeyCode == Keys.Right)
                 {
-                    // 標準のタブ切り替えを維持
-                }
+                    // 標準のタブ切り替えを維持
+                }
                 else
                 {
-                    // ショートカット
-                    int targetIndex = GetIndexFromKey(e.KeyCode);
+                    // ショートカット
+                    int targetIndex = GetIndexFromKey(e.KeyCode);
                     if (targetIndex >= 0 && lb.Tag is List<TemplateItem> items && targetIndex < items.Count)
                     {
                         lb.SelectedIndex = targetIndex;
@@ -237,17 +242,17 @@ namespace PhraseLauncher
             form.Controls.Add(searchPanel);
 
             updateLists();
-            // ===============================
-            // 確実にフォーカスを当てる処理
-            // ===============================
-            form.Show();
+            // ===============================
+            // 確実にフォーカスを当てる処理
+            // ===============================
+            form.Show();
 
-            // OSにウィンドウを前面に出すよう強制
-            SetForegroundWindow(form.Handle);
+            // OSにウィンドウを前面に出すよう強制
+            SetForegroundWindow(form.Handle);
             form.Activate();
 
-            // 初期フォーカス：リスト部分
-            if (tab.TabPages.Count > 0)
+            // 初期フォーカス：リスト部分
+            if (tab.TabPages.Count > 0)
             {
                 var firstLb = tab.TabPages[0].Controls[0] as ListBox;
                 firstLb.Focus();
@@ -278,13 +283,13 @@ namespace PhraseLauncher
 
         static string GetShortcutLabel(int index)
         {
-            // 1-9 (index 0-8)
-            if (index < 9) return (index + 1).ToString();
-            // a-z (index 9-34)
-            if (index <= 34) return ((char)('a' + (index - 9))).ToString();
+            // 1-9 (index 0-8)
+            if (index < 9) return (index + 1).ToString();
+            // a-z (index 9-34)
+            if (index <= 34) return ((char)('a' + (index - 9))).ToString();
 
-            // それ以降は割り振らない
-            return "";
+            // それ以降は割り振らない
+            return "";
         }
     }
 }

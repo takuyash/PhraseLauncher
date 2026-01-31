@@ -20,7 +20,7 @@ namespace PhraseLauncher
         {
             Width = 700;
             Height = 500;
-            Text = "定型文編集・登録";
+            Text = LanguageManager.GetString("EditorTitle");
             StartPosition = FormStartPosition.CenterScreen;
             this.Icon = Program.AppIcon;
 
@@ -30,9 +30,9 @@ namespace PhraseLauncher
 
             fileCombo.SetBounds(10, 10, 300, 25);
 
-            Button newBtn = new() { Text = "新規作成", Left = 320, Top = 10, Width = 80 };
-            Button renameBtn = new() { Text = "グループ名変更", Left = 410, Top = 10, Width = 90 };
-            Button deleteGroupBtn = new() { Text = "グループ削除", Left = 590, Top = 10, Width = 90 };
+            Button newBtn = new() { Text = LanguageManager.GetString("EditorNew"), Left = 320, Top = 10, Width = 80 };
+            Button renameBtn = new() { Text = LanguageManager.GetString("EditorRename"), Left = 410, Top = 10, Width = 90 };
+            Button deleteGroupBtn = new() { Text = LanguageManager.GetString("EditorDeleteGroup"), Left = 590, Top = 10, Width = 90 };
 
             Button groupUpBtn = new() { Text = "▲", Left = 500, Top = 10, Width = 40 };
             Button groupDownBtn = new() { Text = "▼", Left = 545, Top = 10, Width = 40 };
@@ -40,8 +40,8 @@ namespace PhraseLauncher
             dgv.SetBounds(10, 40, 660, 380);
             dgv.AllowUserToAddRows = true;
             dgv.ColumnCount = 2;
-            dgv.Columns[0].Name = "定型文";
-            dgv.Columns[1].Name = "メモ";
+            dgv.Columns[0].Name = LanguageManager.GetString("EditorColPhrase");
+            dgv.Columns[1].Name = LanguageManager.GetString("EditorColNote");
             dgv.Columns[0].Width = 300;
             dgv.Columns[1].Width = 300;
 
@@ -65,8 +65,8 @@ namespace PhraseLauncher
                 }
             };
 
-            Button saveBtn = new() { Text = "保存", Left = 580, Top = 430 };
-            Button delBtn = new() { Text = "削除", Left = 490, Top = 430 };
+            Button saveBtn = new() { Text = LanguageManager.GetString("EditorSave"), Left = 580, Top = 430 };
+            Button delBtn = new() { Text = LanguageManager.GetString("EditorDelete"), Left = 490, Top = 430 };
             Button upBtn = new() { Text = "↑", Left = 220, Top = 430, Width = 40 };
             Button downBtn = new() { Text = "↓", Left = 270, Top = 430, Width = 40 };
 
@@ -77,7 +77,7 @@ namespace PhraseLauncher
             delBtn.Click += (s, e) =>
             {
                 if (dgv.CurrentRow == null || dgv.CurrentRow.IsNewRow) return;
-                if (MessageBox.Show("削除しますか？", "確認",
+                if (MessageBox.Show(LanguageManager.GetString("EditorMsgConfirm"), LanguageManager.GetString("EditorMsgConfirmTitle"),
                     MessageBoxButtons.YesNo) == DialogResult.Yes)
                     dgv.Rows.Remove(dgv.CurrentRow);
             };
@@ -173,8 +173,8 @@ namespace PhraseLauncher
             string name = fileCombo.Text;
 
             if (MessageBox.Show(
-                $"グループ「{name}」を削除しますか？\n定型文もすべて消えます。",
-                "確認",
+                string.Format(LanguageManager.GetString("EditorMsgConfirmGroup"), name),
+                LanguageManager.GetString("EditorMsgConfirmTitle"),
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning) != DialogResult.Yes)
                 return;
@@ -231,15 +231,8 @@ namespace PhraseLauncher
 
                 list.Add(new TemplateItem
                 {
-                    text = (r.Cells[0].Value ?? "")
-                        .ToString()
-                        .Replace("\r\n", "\n")
-                        .Replace("\n", "\r\n"),
-
-                    note = (r.Cells[1].Value ?? "")
-                        .ToString()
-                        .Replace("\r\n", "\n")
-                        .Replace("\n", "\r\n")
+                    text = (r.Cells[0].Value ?? "").ToString().Replace("\r\n", "\n"),
+                    note = (r.Cells[1].Value ?? "").ToString().Replace("\r\n", "\n")
                 });
             }
 
@@ -249,14 +242,15 @@ namespace PhraseLauncher
             );
 
             TemplateRepository.Save(path, list);
-            MessageBox.Show("保存しました。");
+            MessageBox.Show(LanguageManager.GetString("EditorMsgSaved"));
         }
 
         private void CreateNewFile()
         {
             string newName =
                 Microsoft.VisualBasic.Interaction.InputBox(
-                    "新規グループ名", "作成", "new");
+                    LanguageManager.GetString("EditorInputNewMsg"),
+                    LanguageManager.GetString("EditorInputNewTitle"), "new");
 
             if (string.IsNullOrWhiteSpace(newName)) return;
 
@@ -265,7 +259,7 @@ namespace PhraseLauncher
 
             if (File.Exists(path))
             {
-                MessageBox.Show("既に存在します。");
+                MessageBox.Show(LanguageManager.GetString("EditorMsgExists"));
                 return;
             }
 
@@ -283,7 +277,8 @@ namespace PhraseLauncher
             string oldName = fileCombo.Text;
             string newName =
                 Microsoft.VisualBasic.Interaction.InputBox(
-                    "新しい名前", "変更", oldName);
+                    LanguageManager.GetString("EditorInputRenameMsg"),
+                    LanguageManager.GetString("EditorInputRenameTitle"), oldName);
 
             if (string.IsNullOrWhiteSpace(newName) || newName == oldName)
                 return;
@@ -296,7 +291,7 @@ namespace PhraseLauncher
 
             if (File.Exists(newPath))
             {
-                MessageBox.Show("既に存在します。");
+                MessageBox.Show(LanguageManager.GetString("EditorMsgExists"));
                 return;
             }
 

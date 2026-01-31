@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
@@ -11,8 +11,8 @@ namespace PhraseLauncher
         public static Form JsonForm;
         public static NotifyIcon TrayIcon;
 
-        // ‚Ç‚±‚©‚ç‚Å‚àŽQÆ‚Å‚«‚éƒAƒCƒRƒ“ƒIƒuƒWƒFƒNƒg
-        public static Icon AppIcon;
+Â  Â  Â  Â  // ã©ã“ã‹ã‚‰ã§ã‚‚å‚ç…§ã§ãã‚‹ã‚¢ã‚¤ã‚³ãƒ³ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
+Â  Â  Â  Â  public static Icon AppIcon;
 
         [STAThread]
         static void Main()
@@ -20,30 +20,38 @@ namespace PhraseLauncher
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            // ƒAƒCƒRƒ“‚ðˆê“x‚¾‚¯“Ç‚Ýž‚Þ
-            AppIcon = LoadIcon("icon.ico");
+Â  Â  Â  Â  Â  Â  // ã‚¢ã‚¤ã‚³ãƒ³ã‚’ä¸€åº¦ã ã‘èª­ã¿è¾¼ã‚€
+Â  Â  Â  Â  Â  Â  AppIcon = LoadIcon("icon.ico");
 
-            // ƒ^ƒXƒNƒgƒŒƒC‚ÌÝ’è
-            TrayIcon = new NotifyIcon
+Â  Â  Â  Â  Â  Â  // ã‚¿ã‚¹ã‚¯ãƒˆãƒ¬ã‚¤ã®è¨­å®š
+Â  Â  Â  Â  Â  Â  TrayIcon = new NotifyIcon
             {
                 Icon = AppIcon,
                 Visible = true,
                 Text = "PhraseLauncher"
             };
 
-            // ƒƒjƒ…[ì¬
-            ContextMenuStrip menu = new();
-            menu.Items.Add(new ToolStripMenuItem("ˆê——•\Ž¦", null, (s, e) => JsonListForm.Show()));
-            menu.Items.Add(new ToolStripMenuItem("•ÒW/“o˜^", null, (s, e) => new JsonEditorForm().Show()));
-            menu.Items.Add(new ToolStripMenuItem("ƒwƒ‹ƒv", null, (s, e) => new HelpForm().Show()));
-            menu.Items.Add(new ToolStripSeparator());
-            menu.Items.Add(new ToolStripMenuItem("I—¹", null, (s, e) => ExitApplication()));
-            TrayIcon.ContextMenuStrip = menu;
+            // è¨€èªžå¤‰æ›´æ™‚ã«ãƒ¡ãƒ‹ãƒ¥ãƒ¼ã‚’æ›´æ–°
+            LanguageManager.LanguageChanged += UpdateTrayMenu;
+            UpdateTrayMenu();
 
-            // ƒL[ƒ{[ƒhŠÄŽ‹ŠJŽn
-            KbdManager = new KeyboardManager();
+Â  Â  Â  Â  Â  Â  // ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ç›£è¦–é–‹å§‹
+Â  Â  Â  Â  Â  Â  KbdManager = new KeyboardManager();
 
             Application.Run();
+        }
+
+        private static void UpdateTrayMenu()
+        {
+Â  Â  Â  Â  Â  Â  // ãƒ¡ãƒ‹ãƒ¥ãƒ¼ä½œæˆ
+Â  Â  Â  Â  Â  Â  ContextMenuStrip menu = new();
+            menu.Items.Add(new ToolStripMenuItem(LanguageManager.GetString("MenuShow"), null, (s, e) => JsonListForm.Show()));
+            menu.Items.Add(new ToolStripMenuItem(LanguageManager.GetString("MenuEdit"), null, (s, e) => new JsonEditorForm().Show()));
+            menu.Items.Add(new ToolStripMenuItem(LanguageManager.GetString("MenuSetting"), null, (s, e) => new SettingForm().Show()));
+            menu.Items.Add(new ToolStripMenuItem(LanguageManager.GetString("MenuHelp"), null, (s, e) => new HelpForm().Show()));
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add(new ToolStripMenuItem(LanguageManager.GetString("MenuExit"), null, (s, e) => ExitApplication()));
+            TrayIcon.ContextMenuStrip = menu;
         }
 
         private static Icon LoadIcon(string fileName)

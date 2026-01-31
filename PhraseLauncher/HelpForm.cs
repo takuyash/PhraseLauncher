@@ -16,14 +16,16 @@ namespace PhraseLauncher
         private const string HelpUrl = "https://takuyash.github.io/PhraseLauncherSite/docs.html";
         private const string LicenseUrl = "https://github.com/takuyash/PhraseLauncher/blob/main/LICENSE";
 
+        private LinkLabel lnkRepo, lnkHelp, lnkLicense, lnkUpdate;
+
         public HelpForm()
         {
-            this.Text = "ヘルプ / バージョン情報";
             this.Size = new Size(420, 260);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
+            this.Icon = Program.AppIcon;
 
             var panel = new FlowLayoutPanel()
             {
@@ -34,28 +36,44 @@ namespace PhraseLauncher
             };
             this.Controls.Add(panel);
 
-            // アプリ名
-            panel.Controls.Add(new Label()
+            // アプリ名
+            panel.Controls.Add(new Label()
             {
                 Text = "PhraseLauncher",
                 Font = new Font(Font.FontFamily, 12, FontStyle.Bold),
                 AutoSize = true
             });
 
-            // バージョン
-            panel.Controls.Add(new Label()
+            // バージョン
+            panel.Controls.Add(new Label()
             {
                 Text = $"Version: {GetVersion()}",
                 AutoSize = true,
                 Margin = new Padding(0, 5, 0, 15)
             });
 
-            panel.Controls.Add(CreateLink("GitHub リポジトリ", GitHubRepoUrl));
-            panel.Controls.Add(CreateLink("ヘルプ / 使い方", HelpUrl));
-            panel.Controls.Add(CreateLink("ライセンス", LicenseUrl));
+            lnkRepo = CreateLink("", GitHubRepoUrl) as LinkLabel;
+            lnkHelp = CreateLink("", HelpUrl) as LinkLabel;
+            lnkLicense = CreateLink("", LicenseUrl) as LinkLabel;
 
-            // 非同期でチェック
-            this.Load += async (s, e) => await CheckForUpdateAsync(panel);
+            panel.Controls.Add(lnkRepo);
+            panel.Controls.Add(lnkHelp);
+            panel.Controls.Add(lnkLicense);
+
+            LanguageManager.LanguageChanged += UpdateText;
+            UpdateText();
+
+            // 非同期でチェック
+            this.Load += async (s, e) => await CheckForUpdateAsync(panel);
+            this.FormClosed += (s, e) => LanguageManager.LanguageChanged -= UpdateText;
+        }
+
+        private void UpdateText()
+        {
+            this.Text = LanguageManager.GetString("HelpTitle");
+            lnkRepo.Text = LanguageManager.GetString("HelpRepo");
+            lnkHelp.Text = LanguageManager.GetString("HelpUsage");
+            lnkLicense.Text = LanguageManager.GetString("HelpLicense");
         }
 
         private string GetVersion()
@@ -92,7 +110,7 @@ namespace PhraseLauncher
                 client.DefaultRequestHeaders.UserAgent.ParseAdd("PhraseLauncher");
 
                 var json = await client.GetStringAsync(
-                    "https://api.github.com/repos/takuyash/PhraseLauncher/releases/latest");
+                  "https://api.github.com/repos/takuyash/PhraseLauncher/releases/latest");
 
                 using var doc = JsonDocument.Parse(json);
                 var root = doc.RootElement;
@@ -107,15 +125,16 @@ namespace PhraseLauncher
 
                 if (current != null && latest > current)
                 {
-                    var link = new LinkLabel()
+                    lnkUpdate = new LinkLabel()
                     {
-                        Text = $"新しいバージョンがあります（v{latest}）",
+                        Text = string.Format(LanguageManager.GetString("HelpUpdate"), latest),
                         AutoSize = true,
                         LinkColor = Color.DarkRed,
-                        Margin = new Padding(0, 15, 0, 0)
-                    };
+                        Margin = new Padding(0, 15, 0, 0),
+                        Tag = latest // バージョン値を保持
+                    };
 
-                    link.LinkClicked += (s, e) =>
+                    lnkUpdate.LinkClicked += (s, e) =>
                     {
                         Process.Start(new ProcessStartInfo
                         {
@@ -124,13 +143,22 @@ namespace PhraseLauncher
                         });
                     };
 
-                    parent.Controls.Add(link);
+                    parent.Controls.Add(lnkUpdate);
+
+                    // アップデートリンク用の動的更新イベント登録
+                    LanguageManager.LanguageChanged += UpdateUpdateLinkText;
                 }
             }
             catch
             {
-                // 失敗しても何もしない
-            }
+                // 失敗しても何もしない
+            }
+        }
+
+        private void UpdateUpdateLinkText()
+        {
+            if (lnkUpdate != null)
+                lnkUpdate.Text = string.Format(LanguageManager.GetString("HelpUpdate"), lnkUpdate.Tag);
         }
     }
 }

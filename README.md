@@ -1,4 +1,4 @@
-# PhraseLauncher(フレーズランチャー)
+# PhraseLauncher
 
 A phrase launcher that lets you input predefined text quickly.
 
@@ -74,10 +74,10 @@ You can switch between Japanese and English in the settings screen.
 ## Screenshots
 
 ### Launcher Screen
-<img src="screenshots/launcher.png" width="40%">
+<img src="screenshots/launcher_en.png" width="40%">
 
 ### Phrase Registration Screen
-<img src="screenshots/PhraseSetting.png" width="40%">
+<img src="screenshots/PhraseSetting_en.png" width="40%">
 
 ---
 

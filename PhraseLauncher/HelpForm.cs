@@ -13,7 +13,7 @@ namespace PhraseLauncher
     {
 
         private const string GitHubRepoUrl = "https://github.com/takuyash/PhraseLauncher";
-        private const string HelpUrl = "https://github.com/takuyash/PhraseLauncher/blob/main/README.md";
+        private const string HelpUrl = "https://takuyash.github.io/PhraseLauncherSite/docs.html";
         private const string LicenseUrl = "https://github.com/takuyash/PhraseLauncher/blob/main/LICENSE";
 
         public HelpForm()

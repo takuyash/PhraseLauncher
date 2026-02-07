@@ -14,9 +14,12 @@ namespace PhraseLauncher
         private ComboBox cmbCtrlCount;
         private Label lblCtrlCount;
 
+        private ComboBox cmbTriggerKey;
+        private Label lblTriggerKey;
+
         public SettingForm()
         {
-            this.Size = new Size(300, 240);
+            this.Size = new Size(300, 300);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
@@ -36,26 +39,42 @@ namespace PhraseLauncher
                 Checked = LanguageManager.EnableHotKey
             };
 
-            lblCtrlCount = new Label
+            lblTriggerKey = new Label
             {
                 Location = new Point(20, 110),
                 AutoSize = true
             };
 
-            cmbCtrlCount = new ComboBox
+            cmbTriggerKey = new ComboBox
             {
                 Location = new Point(20, 135),
+                Width = 120,
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+            cmbTriggerKey.Items.AddRange(new object[] { "Ctrl", "Shift", "Alt", "Space" });
+            cmbTriggerKey.SelectedItem = LanguageManager.TriggerKey;
+
+            lblCtrlCount = new Label
+            {
+                Location = new Point(20, 170),
+                AutoSize = true
+            };
+
+            cmbCtrlCount = new ComboBox
+            {
+                Location = new Point(20, 195),
                 Width = 80,
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
             cmbCtrlCount.Items.AddRange(new object[] { "2", "3", "4", "5" });
             cmbCtrlCount.SelectedItem = LanguageManager.CtrlPressCount.ToString();
 
-            btnSave = new Button { Location = new Point(185, 170), Width = 75 };
+            btnSave = new Button { Location = new Point(185, 230), Width = 75 };
             btnSave.Click += (s, e) =>
             {
                 LanguageManager.SaveLanguage(langCombo.SelectedIndex == 1 ? "en" : "ja");
                 LanguageManager.SaveEnableHotKey(chkEnableHotKey.Checked);
+                LanguageManager.SaveTriggerKey(cmbTriggerKey.SelectedItem.ToString());
                 LanguageManager.SaveCtrlPressCount(int.Parse(cmbCtrlCount.SelectedItem.ToString()));
                 this.Close();
             };
@@ -65,6 +84,8 @@ namespace PhraseLauncher
                 lblLang,
                 langCombo,
                 chkEnableHotKey,
+                lblTriggerKey,
+                cmbTriggerKey,
                 lblCtrlCount,
                 cmbCtrlCount,
                 btnSave
@@ -78,6 +99,7 @@ namespace PhraseLauncher
             this.Text = LanguageManager.GetString("SettingTitle");
             lblLang.Text = LanguageManager.GetString("SettingLang");
             chkEnableHotKey.Text = LanguageManager.GetString("SettingEnableHotKey");
+            lblTriggerKey.Text = LanguageManager.GetString("SettingTriggerKey");
             lblCtrlCount.Text = LanguageManager.GetString("SettingLaunchKeyCount");
             btnSave.Text = LanguageManager.GetString("BtnSave");
         }

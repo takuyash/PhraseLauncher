@@ -15,10 +15,10 @@ namespace PhraseLauncher
         private IntPtr _hookID = IntPtr.Zero;
         private NativeMethods.LowLevelKeyboardProc _proc;
 
-        private DateTime _lastCtrlTime = DateTime.MinValue;
+        private DateTime _lastKeyTime = DateTime.MinValue;
         private int _pressCount = 0;
         private const int DOUBLE_PRESS_MS = 300;
-        private bool _isCtrlPressed = false;
+        private bool _isKeyPressed = false;
 
         public KeyboardManager()
         {
@@ -28,7 +28,7 @@ namespace PhraseLauncher
             _proc = HookCallback;
             _hookID = SetHook(_proc);
 
-            // ホットキー登録 (Ctrl + Shift + O)
+            // ホットキー登録 
             NativeMethods.RegisterHotKey(this.Handle, NativeMethods.HOTKEY_ID,
                 NativeMethods.MOD_CONTROL | NativeMethods.MOD_SHIFT, NativeMethods.VK_O);
 
@@ -69,30 +69,26 @@ namespace PhraseLauncher
                 if (wParam == (IntPtr)NativeMethods.WM_KEYUP ||
                     wParam == (IntPtr)NativeMethods.WM_SYSKEYUP)
                 {
-                    if (vkCode == NativeMethods.VK_LCONTROL ||
-                        vkCode == NativeMethods.VK_RCONTROL)
-                    {
-                        _isCtrlPressed = false;
-                    }
+                    if (IsTargetKey(vkCode))
+                        _isKeyPressed = false;
                 }
 
                 if (wParam == (IntPtr)NativeMethods.WM_KEYDOWN ||
                     wParam == (IntPtr)NativeMethods.WM_SYSKEYDOWN)
                 {
-                    if (vkCode == NativeMethods.VK_LCONTROL ||
-                        vkCode == NativeMethods.VK_RCONTROL)
+                    if (IsTargetKey(vkCode))
                     {
-                        if (_isCtrlPressed)
+                        if (_isKeyPressed)
                             return NativeMethods.CallNextHookEx(_hookID, nCode, wParam, lParam);
 
-                        _isCtrlPressed = true;
+                        _isKeyPressed = true;
 
                         var now = DateTime.Now;
-                        _pressCount = (now - _lastCtrlTime).TotalMilliseconds <= DOUBLE_PRESS_MS
+                        _pressCount = (now - _lastKeyTime).TotalMilliseconds <= DOUBLE_PRESS_MS
                             ? _pressCount + 1
                             : 1;
 
-                        _lastCtrlTime = now;
+                        _lastKeyTime = now;
 
                         if (_pressCount >= LanguageManager.CtrlPressCount)
                         {
@@ -100,17 +96,29 @@ namespace PhraseLauncher
                                 JsonListForm.Show();
 
                             _pressCount = 0;
-                            _lastCtrlTime = DateTime.MinValue;
+                            _lastKeyTime = DateTime.MinValue;
                         }
                     }
                     else
                     {
                         _pressCount = 0;
-                        _lastCtrlTime = DateTime.MinValue;
+                        _lastKeyTime = DateTime.MinValue;
                     }
                 }
             }
             return NativeMethods.CallNextHookEx(_hookID, nCode, wParam, lParam);
+        }
+
+        private bool IsTargetKey(int vk)
+        {
+            return LanguageManager.TriggerKey switch
+            {
+                "Ctrl" => vk == NativeMethods.VK_LCONTROL || vk == NativeMethods.VK_RCONTROL,
+                "Shift" => vk == NativeMethods.VK_LSHIFT || vk == NativeMethods.VK_RSHIFT,
+                "Alt" => vk == NativeMethods.VK_LMENU || vk == NativeMethods.VK_RMENU,
+                "Space" => vk == NativeMethods.VK_SPACE,
+                _ => false
+            };
         }
 
         private void OnTimerTick(object sender, EventArgs e)

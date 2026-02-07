@@ -23,6 +23,9 @@ namespace PhraseLauncher
         private static int _ctrlPressCount = 2;
         public static int CtrlPressCount => _ctrlPressCount;
 
+        private static string _triggerKey = "Ctrl";
+        public static string TriggerKey => _triggerKey;
+
         static LanguageManager()
         {
             LoadSettings();
@@ -42,8 +45,10 @@ namespace PhraseLauncher
             _ctrlPressCount = int.TryParse(temp.ToString(), out int c)
                 ? Math.Max(2, Math.Min(5, c))
                 : 2;
-        }
 
+            GetPrivateProfileString("Settings", "TriggerKey", "Ctrl", temp, 255, IniPath);
+            _triggerKey = temp.ToString();
+        }
 
         public static void SaveLanguage(string lang)
         {
@@ -67,22 +72,14 @@ namespace PhraseLauncher
         public static void SaveCtrlPressCount(int count)
         {
             _ctrlPressCount = Math.Max(2, Math.Min(5, count));
-            WritePrivateProfileString(
-                "Settings",
-                "CtrlPressCount",
-                _ctrlPressCount.ToString(),
-                IniPath
-            );
+            WritePrivateProfileString("Settings", "CtrlPressCount", _ctrlPressCount.ToString(), IniPath);
         }
 
-        //private static void LoadCtrlPressCount(Dictionary<string, string> ini)
-        //{
-        //    if (ini.ContainsKey("CtrlPressCount") &&
-        //        int.TryParse(ini["CtrlPressCount"], out int v))
-        //    {
-        //        _ctrlPressCount = Math.Max(2, Math.Min(5, v));
-        //    }
-        //}
+        public static void SaveTriggerKey(string key)
+        {
+            _triggerKey = key;
+            WritePrivateProfileString("Settings", "TriggerKey", key, IniPath);
+        }
 
         private static readonly Dictionary<string, string> Japanese = new()
         {
@@ -101,6 +98,7 @@ namespace PhraseLauncher
             { "SettingTitle", "設定" },
             { "SettingLang", "言語 (Language):" },
             { "SettingEnableHotKey", "ホットキーを有効にする" },
+            { "SettingTriggerKey", "起動キー" },
             { "SettingLaunchKeyCount", "連打回数(2～5)回" },
             { "BtnSave", "保存" },
             // JsonEditorForm
@@ -140,6 +138,7 @@ namespace PhraseLauncher
             { "SettingTitle", "Settings" },
             { "SettingLang", "Language:" },
             { "SettingEnableHotKey", "Enable hotkey" },
+            { "SettingTriggerKey", "Trigger key" },
             { "SettingLaunchKeyCount", "press count(2-5):" },
             { "BtnSave", "Save" },
             // JsonEditorForm

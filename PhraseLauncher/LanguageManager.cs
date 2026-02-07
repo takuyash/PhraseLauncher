@@ -16,6 +16,8 @@ namespace PhraseLauncher
         private static string IniPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "settings.ini");
         public static string CurrentLanguage { get; private set; } = "ja";
 
+        public static bool EnableHotKey { get; private set; } = true;
+
         public static event Action LanguageChanged;
 
         static LanguageManager()
@@ -28,6 +30,9 @@ namespace PhraseLauncher
             StringBuilder temp = new StringBuilder(255);
             GetPrivateProfileString("Settings", "Language", "ja", temp, 255, IniPath);
             CurrentLanguage = temp.ToString();
+
+            GetPrivateProfileString("Settings", "EnableHotKey", "true", temp, 255, IniPath);
+            EnableHotKey = bool.TryParse(temp.ToString(), out bool enabled) ? enabled : true;
         }
 
         public static void SaveLanguage(string lang)
@@ -41,6 +46,12 @@ namespace PhraseLauncher
         {
             var dict = CurrentLanguage == "en" ? English : Japanese;
             return dict.ContainsKey(key) ? dict[key] : key;
+        }
+
+        public static void SaveEnableHotKey(bool enabled)
+        {
+            EnableHotKey = enabled;
+            WritePrivateProfileString("Settings", "EnableHotKey", enabled.ToString(), IniPath);
         }
 
         private static readonly Dictionary<string, string> Japanese = new()

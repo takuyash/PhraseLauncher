@@ -40,7 +40,8 @@ namespace PhraseLauncher
         {
             if (m.Msg == NativeMethods.WM_HOTKEY && (int)m.WParam == NativeMethods.HOTKEY_ID)
             {
-                JsonListForm.Show();
+                if (LanguageManager.EnableHotKey)
+                    JsonListForm.Show();
             }
             base.WndProc(ref m);
         }
@@ -78,7 +79,8 @@ namespace PhraseLauncher
                             var now = DateTime.Now;
                             if ((now - _lastCtrlTime).TotalMilliseconds <= DOUBLE_PRESS_MS)
                             {
-                                JsonListForm.Show();
+                                if (LanguageManager.EnableHotKey)
+                                    JsonListForm.Show();
                                 _lastCtrlTime = DateTime.MinValue;
                             }
                             else { _lastCtrlTime = now; }

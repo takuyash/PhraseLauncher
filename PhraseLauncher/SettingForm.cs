@@ -9,10 +9,11 @@ namespace PhraseLauncher
         private ComboBox langCombo;
         private Label lblLang;
         private Button btnSave;
+        private CheckBox chkEnableHotKey;
 
         public SettingForm()
         {
-            this.Size = new Size(300, 150);
+            this.Size = new Size(300, 190);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
@@ -25,14 +26,22 @@ namespace PhraseLauncher
             langCombo.Items.Add("English");
             langCombo.SelectedIndex = LanguageManager.CurrentLanguage == "en" ? 1 : 0;
 
-            btnSave = new Button { Location = new Point(185, 80), Width = 75 };
+            chkEnableHotKey = new CheckBox
+            {
+                Location = new Point(20, 80),
+                Width = 240,
+                Checked = LanguageManager.EnableHotKey
+            };
+
+            btnSave = new Button { Location = new Point(185, 120), Width = 75 };
             btnSave.Click += (s, e) =>
             {
                 LanguageManager.SaveLanguage(langCombo.SelectedIndex == 1 ? "en" : "ja");
+                LanguageManager.SaveEnableHotKey(chkEnableHotKey.Checked);
                 this.Close();
             };
 
-            this.Controls.AddRange(new Control[] { lblLang, langCombo, btnSave });
+            this.Controls.AddRange(new Control[] { lblLang, langCombo, chkEnableHotKey, btnSave });
             UpdateText();
         }
 
@@ -40,6 +49,7 @@ namespace PhraseLauncher
         {
             this.Text = LanguageManager.GetString("SettingTitle");
             lblLang.Text = LanguageManager.GetString("SettingLang");
+            chkEnableHotKey.Text = "Enable HotKey";
             btnSave.Text = LanguageManager.GetString("BtnSave");
         }
     }

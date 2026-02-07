@@ -20,6 +20,9 @@ namespace PhraseLauncher
 
         public static event Action LanguageChanged;
 
+        private static int _ctrlPressCount = 2;
+        public static int CtrlPressCount => _ctrlPressCount;
+
         static LanguageManager()
         {
             LoadSettings();
@@ -28,12 +31,19 @@ namespace PhraseLauncher
         public static void LoadSettings()
         {
             StringBuilder temp = new StringBuilder(255);
+
             GetPrivateProfileString("Settings", "Language", "ja", temp, 255, IniPath);
             CurrentLanguage = temp.ToString();
 
             GetPrivateProfileString("Settings", "EnableHotKey", "true", temp, 255, IniPath);
             EnableHotKey = bool.TryParse(temp.ToString(), out bool enabled) ? enabled : true;
+
+            GetPrivateProfileString("Settings", "CtrlPressCount", "2", temp, 255, IniPath);
+            _ctrlPressCount = int.TryParse(temp.ToString(), out int c)
+                ? Math.Max(2, Math.Min(5, c))
+                : 2;
         }
+
 
         public static void SaveLanguage(string lang)
         {
@@ -54,6 +64,26 @@ namespace PhraseLauncher
             WritePrivateProfileString("Settings", "EnableHotKey", enabled.ToString(), IniPath);
         }
 
+        public static void SaveCtrlPressCount(int count)
+        {
+            _ctrlPressCount = Math.Max(2, Math.Min(5, count));
+            WritePrivateProfileString(
+                "Settings",
+                "CtrlPressCount",
+                _ctrlPressCount.ToString(),
+                IniPath
+            );
+        }
+
+        //private static void LoadCtrlPressCount(Dictionary<string, string> ini)
+        //{
+        //    if (ini.ContainsKey("CtrlPressCount") &&
+        //        int.TryParse(ini["CtrlPressCount"], out int v))
+        //    {
+        //        _ctrlPressCount = Math.Max(2, Math.Min(5, v));
+        //    }
+        //}
+
         private static readonly Dictionary<string, string> Japanese = new()
         {
             { "MenuShow", "一覧表示" },
@@ -70,6 +100,8 @@ namespace PhraseLauncher
             { "ListEmpty", "定型文の登録がありません。\nタスクトレイのアプリを右クリックして登録してください。" },
             { "SettingTitle", "設定" },
             { "SettingLang", "言語 (Language):" },
+            { "SettingEnableHotKey", "ホットキーを有効にする" },
+            { "SettingLaunchKeyCount", "連打回数(2～5)回" },
             { "BtnSave", "保存" },
             // JsonEditorForm
             { "EditorTitle", "定型文編集・登録" },
@@ -107,6 +139,8 @@ namespace PhraseLauncher
             { "ListEmpty", "No phrases registered.\nRight-click the tray icon to register." },
             { "SettingTitle", "Settings" },
             { "SettingLang", "Language:" },
+            { "SettingEnableHotKey", "Enable hotkey" },
+            { "SettingLaunchKeyCount", "press count(2-5):" },
             { "BtnSave", "Save" },
             // JsonEditorForm
             { "EditorTitle", "Edit/Register Phrases" },

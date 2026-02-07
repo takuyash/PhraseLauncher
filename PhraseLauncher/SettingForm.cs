@@ -11,9 +11,12 @@ namespace PhraseLauncher
         private Button btnSave;
         private CheckBox chkEnableHotKey;
 
+        private ComboBox cmbCtrlCount;
+        private Label lblCtrlCount;
+
         public SettingForm()
         {
-            this.Size = new Size(300, 190);
+            this.Size = new Size(300, 240);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
@@ -33,15 +36,40 @@ namespace PhraseLauncher
                 Checked = LanguageManager.EnableHotKey
             };
 
-            btnSave = new Button { Location = new Point(185, 120), Width = 75 };
+            lblCtrlCount = new Label
+            {
+                Location = new Point(20, 110),
+                AutoSize = true
+            };
+
+            cmbCtrlCount = new ComboBox
+            {
+                Location = new Point(20, 135),
+                Width = 80,
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+            cmbCtrlCount.Items.AddRange(new object[] { "2", "3", "4", "5" });
+            cmbCtrlCount.SelectedItem = LanguageManager.CtrlPressCount.ToString();
+
+            btnSave = new Button { Location = new Point(185, 170), Width = 75 };
             btnSave.Click += (s, e) =>
             {
                 LanguageManager.SaveLanguage(langCombo.SelectedIndex == 1 ? "en" : "ja");
                 LanguageManager.SaveEnableHotKey(chkEnableHotKey.Checked);
+                LanguageManager.SaveCtrlPressCount(int.Parse(cmbCtrlCount.SelectedItem.ToString()));
                 this.Close();
             };
 
-            this.Controls.AddRange(new Control[] { lblLang, langCombo, chkEnableHotKey, btnSave });
+            this.Controls.AddRange(new Control[]
+            {
+                lblLang,
+                langCombo,
+                chkEnableHotKey,
+                lblCtrlCount,
+                cmbCtrlCount,
+                btnSave
+            });
+
             UpdateText();
         }
 
@@ -49,7 +77,8 @@ namespace PhraseLauncher
         {
             this.Text = LanguageManager.GetString("SettingTitle");
             lblLang.Text = LanguageManager.GetString("SettingLang");
-            chkEnableHotKey.Text = "Enable HotKey";
+            chkEnableHotKey.Text = LanguageManager.GetString("SettingEnableHotKey");
+            lblCtrlCount.Text = LanguageManager.GetString("SettingLaunchKeyCount");
             btnSave.Text = LanguageManager.GetString("BtnSave");
         }
     }

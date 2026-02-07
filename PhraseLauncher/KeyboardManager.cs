@@ -7,7 +7,7 @@ using Timer = System.Windows.Forms.Timer;
 
 namespace PhraseLauncher
 {
-    // FormではなくNativeWindowを使うことで「隠し画面」を不要にします
+
     class KeyboardManager : NativeWindow, IDisposable
     {
         private Timer _timer = new() { Interval = 50 };
@@ -16,6 +16,7 @@ namespace PhraseLauncher
         private NativeMethods.LowLevelKeyboardProc _proc;
 
         private DateTime _lastCtrlTime = DateTime.MinValue;
+        private int _pressCount = 0;
         private const int DOUBLE_PRESS_MS = 300;
         private bool _isCtrlPressed = false;
 
@@ -51,8 +52,11 @@ namespace PhraseLauncher
             using (Process curProcess = Process.GetCurrentProcess())
             using (ProcessModule curModule = curProcess.MainModule)
             {
-                return NativeMethods.SetWindowsHookEx(NativeMethods.WH_KEYBOARD_LL, proc,
-                    NativeMethods.GetModuleHandle(curModule.ModuleName), 0);
+                return NativeMethods.SetWindowsHookEx(
+                    NativeMethods.WH_KEYBOARD_LL,
+                    proc,
+                    NativeMethods.GetModuleHandle(curModule.ModuleName),
+                    0);
             }
         }
 
@@ -62,31 +66,48 @@ namespace PhraseLauncher
             {
                 int vkCode = Marshal.ReadInt32(lParam);
 
-                // Ctrlキーの判定 (Double Press用)
-                if (wParam == (IntPtr)NativeMethods.WM_KEYUP || wParam == (IntPtr)NativeMethods.WM_SYSKEYUP)
+                if (wParam == (IntPtr)NativeMethods.WM_KEYUP ||
+                    wParam == (IntPtr)NativeMethods.WM_SYSKEYUP)
                 {
-                    if (vkCode == NativeMethods.VK_LCONTROL || vkCode == NativeMethods.VK_RCONTROL)
+                    if (vkCode == NativeMethods.VK_LCONTROL ||
+                        vkCode == NativeMethods.VK_RCONTROL)
+                    {
                         _isCtrlPressed = false;
+                    }
                 }
 
-                if (wParam == (IntPtr)NativeMethods.WM_KEYDOWN || wParam == (IntPtr)NativeMethods.WM_SYSKEYDOWN)
+                if (wParam == (IntPtr)NativeMethods.WM_KEYDOWN ||
+                    wParam == (IntPtr)NativeMethods.WM_SYSKEYDOWN)
                 {
-                    if (vkCode == NativeMethods.VK_LCONTROL || vkCode == NativeMethods.VK_RCONTROL)
+                    if (vkCode == NativeMethods.VK_LCONTROL ||
+                        vkCode == NativeMethods.VK_RCONTROL)
                     {
-                        if (!_isCtrlPressed)
+                        if (_isCtrlPressed)
+                            return NativeMethods.CallNextHookEx(_hookID, nCode, wParam, lParam);
+
+                        _isCtrlPressed = true;
+
+                        var now = DateTime.Now;
+                        _pressCount = (now - _lastCtrlTime).TotalMilliseconds <= DOUBLE_PRESS_MS
+                            ? _pressCount + 1
+                            : 1;
+
+                        _lastCtrlTime = now;
+
+                        if (_pressCount >= LanguageManager.CtrlPressCount)
                         {
-                            _isCtrlPressed = true;
-                            var now = DateTime.Now;
-                            if ((now - _lastCtrlTime).TotalMilliseconds <= DOUBLE_PRESS_MS)
-                            {
-                                if (LanguageManager.EnableHotKey)
-                                    JsonListForm.Show();
-                                _lastCtrlTime = DateTime.MinValue;
-                            }
-                            else { _lastCtrlTime = now; }
+                            if (LanguageManager.EnableHotKey)
+                                JsonListForm.Show();
+
+                            _pressCount = 0;
+                            _lastCtrlTime = DateTime.MinValue;
                         }
                     }
-                    else { _lastCtrlTime = DateTime.MinValue; }
+                    else
+                    {
+                        _pressCount = 0;
+                        _lastCtrlTime = DateTime.MinValue;
+                    }
                 }
             }
             return NativeMethods.CallNextHookEx(_hookID, nCode, wParam, lParam);

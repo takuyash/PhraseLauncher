@@ -26,18 +26,27 @@ Because of these frustrations, I created a tool specifically designed for predef
 
 ## How to Use (Quick Start)
 
-0. Download the latest version  
+0. Download the latest version from the link below and extract it to any location:    
    https://github.com/takuyash/PhraseLauncher/releases  
+
+   <img src="screenshots/decompress.png" width="40%">  
 
 1. Run the `.exe` file and the application will stay resident in the system tray.  
 
+   <img src="screenshots/taskTray.png" height="10%">  
+
 2. Right-click the system tray icon to open the settings screen.  
    You can choose either Japanese or English as the display language.  
-   Register groups and predefined phrases as needed.
+   
+   <img src="screenshots/tasktray2_en.png" width="40%">  
 
-3. Open the launcher using **double Ctrl** (configurable) or **Ctrl + Shift + O**.
+3. You can register groups and standard phrases from the edit registration screen, so please register them.
 
-4. Each displayed item has a key assigned to it, so you can input phrases instantly just by pressing the corresponding key—no mouse or cursor movement required.
+   <img src="screenshots/PhraseSetting1_en.png" width="40%">  
+
+4. Open the launcher using **double Ctrl** (configurable) or **Ctrl + Shift + O**.
+
+5. Each displayed item has a key assigned to it, so you can input phrases instantly just by pressing the corresponding key—no mouse or cursor movement required.
 
 ---
 
@@ -152,18 +161,27 @@ Windowsでは、Windowsキー + Vでクリップボードの履歴の入力や�
 Windows 11
 
 ## 使い方（クイックスタート）
-0. 最新バージョンをダウンロードします  
+0. 下記から最新バージョンをダウンロードし、任意の場所に解凍します  
    https://github.com/takuyash/PhraseLauncher/releases  
    
+   <img src="screenshots/decompress.png" width="40%">  
+
 1. exe を実行するとタスクトレイに常駐します  
+
+   <img src="screenshots/taskTray.png" height="10%">  
 
 2. タスクトレイのアイコンを右クリックして、設定画面が開けます
    言語は日本語と英語が選べるため好きなほうを選んでください。  
-   グループの登録や定型文の登録ができるので登録を行ってください。  
    
-3. Ctrl 2回連続(設定で変更できます) もしくは Ctrl + Shift + O のショートカットでランチャーを呼び出すことができます  
+      <img src="screenshots/tasktray2.png" width="40%">  
 
-4. 表示された項目にキーが割り当てられているためそのキーを入力することでマウスやカーソル移動することなく入力できます
+3. 編集登録画面からグループの登録や定型文の登録ができるので登録を行ってください。  
+   
+      <img src="screenshots/PhraseSetting1.png" width="40%">  
+   
+4. Ctrl 2回連続(設定で変更できます) もしくは Ctrl + Shift + O のショートカットでランチャーを呼び出すことができます  
+
+5. 表示された項目にキーが割り当てられているためそのキーを入力することでマウスやカーソル移動することなく入力できます
 
 ## 起動方法
 ・exeを実行すると、タスクトレイに常駐します。  

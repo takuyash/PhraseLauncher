@@ -99,7 +99,18 @@ namespace PhraseLauncher
             // 検索パネル
             Panel searchPanel = new() { Dock = DockStyle.Top, Height = 30, Padding = new Padding(5) };
             TextBox searchBox = new() { Dock = DockStyle.Fill };
+
+            // メモ検索切り替え
+            CheckBox includeNoteCheck = new()
+            {
+                Text = "メモも含める",
+                Dock = DockStyle.Right,
+                Width = 110,
+                Checked = true
+            };
+
             searchPanel.Controls.Add(searchBox);
+            searchPanel.Controls.Add(includeNoteCheck);
 
             TabControl tab = new() { Dock = DockStyle.Fill };
 
@@ -119,12 +130,17 @@ namespace PhraseLauncher
             Action updateLists = () =>
             {
                 string query = searchBox.Text.ToLower();
+                bool includeNote = includeNoteCheck.Checked;
+
                 for (int i = 0; i < tab.TabPages.Count; i++)
                 {
                     var lb = tab.TabPages[i].Controls[0] as ListBox;
                     var filtered = originalData[i]
-                      .Where(x => (x.text ?? "").ToLower().Contains(query) || (x.note ?? "").ToLower().Contains(query))
-                      .ToList();
+                        .Where(x =>
+                            (x.text ?? "").ToLower().Contains(query) ||
+                            (includeNote && (x.note ?? "").ToLower().Contains(query))
+                        )
+                        .ToList();
 
                     lb.Tag = filtered; // 現在の表示データを保持
                     lb.Items.Clear();
@@ -138,6 +154,7 @@ namespace PhraseLauncher
             };
 
             searchBox.TextChanged += (s, e) => updateLists();
+            includeNoteCheck.CheckedChanged += (s, e) => updateLists();
 
             // タブとリストの生成
             for (int i = 0; i < files.Length; i++)

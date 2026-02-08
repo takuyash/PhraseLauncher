@@ -10,7 +10,9 @@ However, it has several limitations:
 3. You cannot input phrases quickly using shortcuts (you need to use the mouse or scroll to select)  
 4. You cannot organize phrases into groups  
 
-Because of these frustrations, I created a tool specifically designed for predefined phrases.
+Because of these frustrations, I created a tool specifically designed for predefined phrases.  
+
+This software is **freeware** and can be used at no cost.  
 
 ---
 
@@ -138,11 +140,11 @@ Please use it at your own risk.
 If you find this software helpful,  
 a ⭐ **Star** or 👀 **Watch** on GitHub would be greatly appreciated and very motivating!
 
-Feedback and issues are always welcome.
+Feedback and issues are always welcome.  
 
 
 
-
+  
 # PhraseLauncher(フレーズランチャー)
 
 定型文を素早く入力できる定型文ランチャー
@@ -152,7 +154,9 @@ Windowsでは、Windowsキー + Vでクリップボードの履歴の入力や�
 2. 定型文特化でない  
 3. ショートカットによる素早い入力ができない(マウスや、スクロールして選んで入力)  
 4. グループ分けできない  
-などの不満があったため定型文に特化したツールを自作しました。
+などの不満があったため定型文に特化したツールを自作しました。  
+
+本ソフトウェアはフリーソフトですので無料で使用することができます。  
 
 ## 画面動作
    <img src="screenshots/launcherSample.png" width="40%">  

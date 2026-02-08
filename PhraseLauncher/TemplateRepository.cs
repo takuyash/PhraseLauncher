@@ -82,5 +82,30 @@ namespace PhraseLauncher
             var encrypted = Encrypt(json);
             File.WriteAllBytes(file, encrypted);
         }
+
+        /* ================= Groups ================= */
+
+        public static string[] GetGroupNames()
+        {
+            if (!Directory.Exists(JsonFolder))
+                return Array.Empty<string>();
+
+            var files = Directory.GetFiles(JsonFolder, "*.json");
+
+            var names = new List<string>();
+            foreach (var file in files)
+            {
+                var name = Path.GetFileNameWithoutExtension(file);
+
+                // groups.json は除外
+                if (name == "groups")
+                    continue;
+
+                names.Add(name);
+            }
+
+            return names.ToArray();
+        }
+
     }
 }

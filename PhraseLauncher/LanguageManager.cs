@@ -124,6 +124,18 @@ namespace PhraseLauncher
             { "TransferExport", "エクスポート" },
             { "TransferSelectFolder", "出力先フォルダを選択してください。" },
             { "TransferDone", "エクスポートが完了しました。" },
+            { "TransferFormat", "形式" },
+            { "TransferFormatJson", "JSON" },
+            { "TransferFormatCsv", "CSV" },
+            { "TransferExportTitle", "エクスポート" },
+            { "TransferImportTitle", "インポート" },
+            { "TransferBrowse", "参照..." },
+            { "TransferImport", "インポート" },
+            { "TransferImportNew", "グループを追加" },
+            { "TransferImportUpdate", "グループを更新" },
+            { "TransferSelectGroup", "グループを選択してください。" },
+            { "TransferConfirmTitle", "確認" },
+            { "TransferConfirmMessage", "ファイル: {0}\nモード: {1}\nグループ: {2}\n\n実行してよろしいですか？" }
         };
 
         private static readonly Dictionary<string, string> English = new()
@@ -169,7 +181,18 @@ namespace PhraseLauncher
             { "TransferExport", "Export" },
             { "TransferSelectFolder", "Please select output folder." },
             { "TransferDone", "Export completed." },
-
+            { "TransferFormat", "Format" },
+            { "TransferFormatJson", "JSON" },
+            { "TransferFormatCsv", "CSV" },
+            { "TransferExportTitle", "Export" },
+            { "TransferImportTitle", "Import" },
+            { "TransferBrowse", "Browse..." },
+            { "TransferImport", "Import" },
+            { "TransferImportNew", "Create new group" },
+            { "TransferImportUpdate", "Update existing group" },
+            { "TransferSelectGroup", "Please select a group." },
+            { "TransferConfirmTitle", "Confirm" },
+            { "TransferConfirmMessage","File: {0}\nMode: {1}\nGroup: {2}\n\nDo you want to continue?" }
         };
     }
 }

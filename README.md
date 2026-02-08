@@ -65,8 +65,8 @@ This software is **freeware** and can be used at no cost.
 Displayed phrases are automatically assigned keys from **0–9** and **A–Z**.  
 Pressing the corresponding key instantly inserts the phrase.
 
-### 2. Easy Activation with Double Ctrl
-The launcher can be displayed using **double Ctrl** or **Ctrl + Shift + O**.  
+### 2. Easy Activation with Double Ctrl  
+The launcher can be displayed using **double Ctrl** (configurable) or **Ctrl + Shift + O**.  
 By default, it uses double Ctrl, but both the key type and the number of presses can be changed in the settings.  
 You can also enable or disable hotkey activation entirely.
 
@@ -197,10 +197,10 @@ Windows 11
 表示された項目には自動で 0〜9、A〜Z のキーが割り当てられます。  
 そのキーを押すことで高速に入力できます。  
 
-2. Shift 2回連続で簡単に起動
-ランチャー画面は、Ctrl 2回連続 もしくは Ctrl + Shift + O で表示できます。
-デフォルトではCtrlキー2回連続ですが、キーの種類と回数は設定で変更できます。
-また、ホットキーでの起動のオンオフの変更もできます。
+2. Ctrl 2回連続で簡単に起動  
+ランチャー画面は、Ctrl 2回連続(設定で変更できます) もしくは Ctrl + Shift + O で表示できます。  
+デフォルトではCtrlキー2回連続ですが、キーの種類と回数は設定で変更できます。  
+また、ホットキーでの起動のオンオフの変更もできます。  
 
 3. キーワード検索機能  
 キーワードによる検索ができます。  

@@ -48,6 +48,10 @@ namespace PhraseLauncher
             dgv.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
 
+            dgv.MultiSelect = true;
+            dgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+
+
             dgv.EditingControlShowing += (s, e) =>
             {
                 if (e.Control is TextBox tb)
@@ -67,8 +71,12 @@ namespace PhraseLauncher
 
             Button saveBtn = new() { Text = LanguageManager.GetString("EditorSave"), Left = 580, Top = 430 };
             Button delBtn = new() { Text = LanguageManager.GetString("EditorDelete"), Left = 490, Top = 430 };
+
             Button upBtn = new() { Text = "↑", Left = 220, Top = 430, Width = 40 };
             Button downBtn = new() { Text = "↓", Left = 270, Top = 430, Width = 40 };
+
+            upBtn.TabStop = false;
+            downBtn.TabStop = false;
 
             RefreshFileList();
             fileCombo.SelectedIndexChanged += (s, e) => LoadSelectedFile();
@@ -302,19 +310,48 @@ namespace PhraseLauncher
             SaveGroupOrder();
         }
 
+        /// <summary>
+        /// 定型文の行を移動（複数選択にも対応）
+        /// </summary>
+        /// <param name="dir"></param>
         private void MoveRow(int dir)
         {
-            if (dgv.CurrentRow == null || dgv.CurrentRow.IsNewRow) return;
+            if (dgv.SelectedRows.Count == 0) return;
 
-            int i = dgv.CurrentRow.Index;
-            int ni = i + dir;
+            var selectedIndexes = dgv.SelectedRows
+                .Cast<DataGridViewRow>()
+                .Where(r => !r.IsNewRow)
+                .Select(r => r.Index)
+                .OrderBy(i => i)
+                .ToList();
 
-            if (ni < 0 || ni >= dgv.Rows.Count - 1) return;
+            if (selectedIndexes.Count == 0) return;
 
-            var row = dgv.Rows[i];
-            dgv.Rows.RemoveAt(i);
-            dgv.Rows.Insert(ni, row);
-            dgv.CurrentCell = row.Cells[0];
+            // 境界チェック
+            if (dir < 0 && selectedIndexes.First() == 0) return;
+            if (dir > 0 && selectedIndexes.Last() >= dgv.Rows.Count - 2) return;
+
+            // 上：昇順 / 下：降順
+            var workOrder = dir < 0
+                ? selectedIndexes
+                : selectedIndexes.OrderByDescending(i => i).ToList();
+
+            foreach (var i in workOrder)
+            {
+                var row = dgv.Rows[i];
+                dgv.Rows.RemoveAt(i);
+                dgv.Rows.Insert(i + dir, row);
+            }
+
+            // 選択状態を復元
+            dgv.ClearSelection();
+            foreach (var i in selectedIndexes)
+                dgv.Rows[i + dir].Selected = true;
+
+            // フォーカスを戻す
+            dgv.Focus();
         }
+
+
     }
 }

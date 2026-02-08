@@ -98,10 +98,10 @@ You can switch between Japanese and English in the settings screen.
 ## Screenshots
 
 ### Launcher Screen
-<img src="screenshots/launcher_en.png" width="40%">
+<img src="screenshots/launcherSample_en.png" width="40%">
 
 ### Phrase Registration Screen
-<img src="screenshots/PhraseSetting_en.png" width="40%">
+<img src="screenshots/PhraseSettingSample_en.png" width="40%">
 
 ---
 
@@ -224,10 +224,10 @@ Shift + Enter で改行も入力できます。
 
 ## 画面
 ### ランチャー画面  
-   <img src="screenshots/launcher.png" width="40%">  
+   <img src="screenshots/launcherSample.png" width="40%">  
 
 ### 定型文登録画面  
-   <img src="screenshots/PhraseSetting.png" width="40%">  
+   <img src="screenshots/PhraseSettingSample.png" width="40%">  
 
 ## アプリ更新方法
 更新時は新しいバージョンをダウンロードして既存フォルダに上書きしてください。  

@@ -85,6 +85,7 @@ namespace PhraseLauncher
         {
             { "MenuShow", "一覧表示" },
             { "MenuEdit", "編集/登録" },
+            { "MenuTransfer", "インポート / エクスポート" },
             { "MenuSetting", "設定" },
             { "MenuHelp", "ヘルプ" },
             { "MenuExit", "終了" },
@@ -118,7 +119,11 @@ namespace PhraseLauncher
             { "EditorInputNewTitle", "作成" },
             { "EditorInputNewMsg", "新規グループ名" },
             { "EditorInputRenameTitle", "変更" },
-            { "EditorInputRenameMsg", "新しい名前" }
+            { "EditorInputRenameMsg", "新しい名前" },
+            { "TransferTitle", "定型文のエクスポート" },
+            { "TransferExport", "エクスポート" },
+            { "TransferSelectFolder", "出力先フォルダを選択してください。" },
+            { "TransferDone", "エクスポートが完了しました。" },
         };
 
         private static readonly Dictionary<string, string> English = new()
@@ -126,6 +131,7 @@ namespace PhraseLauncher
             { "MenuShow", "Show List" },
             { "MenuEdit", "Edit/Register" },
             { "MenuSetting", "Settings" },
+            { "MenuTransfer", "Import / Export" },
             { "MenuHelp", "Help" },
             { "MenuExit", "Exit" },
             { "HelpTitle", "Help / Version Info" },
@@ -158,7 +164,12 @@ namespace PhraseLauncher
             { "EditorInputNewTitle", "Create" },
             { "EditorInputNewMsg", "New Group Name" },
             { "EditorInputRenameTitle", "Rename" },
-            { "EditorInputRenameMsg", "New Name" }
+            { "EditorInputRenameMsg", "New Name" },
+            { "TransferTitle", "Phrase Export" },
+            { "TransferExport", "Export" },
+            { "TransferSelectFolder", "Please select output folder." },
+            { "TransferDone", "Export completed." },
+
         };
     }
 }

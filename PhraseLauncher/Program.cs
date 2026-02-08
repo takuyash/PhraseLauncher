@@ -47,6 +47,7 @@ namespace PhraseLauncher
             ContextMenuStrip menu = new();
             menu.Items.Add(new ToolStripMenuItem(LanguageManager.GetString("MenuShow"), null, (s, e) => JsonListForm.Show()));
             menu.Items.Add(new ToolStripMenuItem(LanguageManager.GetString("MenuEdit"), null, (s, e) => new JsonEditorForm().Show()));
+            menu.Items.Add(new ToolStripMenuItem(LanguageManager.GetString("MenuTransfer"),null,(s, e) => new PhraseTransferForm().Show()));
             menu.Items.Add(new ToolStripMenuItem(LanguageManager.GetString("MenuSetting"), null, (s, e) => new SettingForm().Show()));
             menu.Items.Add(new ToolStripMenuItem(LanguageManager.GetString("MenuHelp"), null, (s, e) => new HelpForm().Show()));
             menu.Items.Add(new ToolStripSeparator());

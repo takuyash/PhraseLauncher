@@ -15,7 +15,7 @@ Because of these frustrations, I created a tool specifically designed for predef
 ---
 
 ## Demo
-<img src="screenshots/launcher_en.png" width="40%">
+<img src="screenshots/launcherSample_en.png" width="40%">
 
 ---
 
@@ -155,7 +155,7 @@ Windowsでは、Windowsキー + Vでクリップボードの履歴の入力や�
 などの不満があったため定型文に特化したツールを自作しました。
 
 ## 画面動作
-   <img src="screenshots/launcher.png" width="40%">  
+   <img src="screenshots/launcherSample.png" width="40%">  
    
 ## 動作環境
 Windows 11

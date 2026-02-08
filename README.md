@@ -38,7 +38,7 @@ Because of these frustrations, I created a tool specifically designed for predef
 2. Right-click the system tray icon to open the settings screen.  
    You can choose either Japanese or English as the display language.  
    
-   <img src="screenshots/tasktray2_en.png" width="40%">  
+   <img src="screenshots/taskTray2_en.png" width="40%">  
 
 3. You can register groups and standard phrases from the edit registration screen, so please register them.
 
@@ -173,7 +173,7 @@ Windows 11
 2. タスクトレイのアイコンを右クリックして、設定画面が開けます
    言語は日本語と英語が選べるため好きなほうを選んでください。  
    
-      <img src="screenshots/tasktray2.png" width="40%">  
+      <img src="screenshots/taskTray2.png" width="40%">  
 
 3. 編集登録画面からグループの登録や定型文の登録ができるので登録を行ってください。  
    

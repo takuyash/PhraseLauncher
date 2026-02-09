@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 using System.Security.Cryptography;
+using System.Linq;
 
 namespace PhraseLauncher
 {
@@ -46,11 +47,19 @@ namespace PhraseLauncher
 
             try
             {
-                var encrypted = File.ReadAllBytes(file);
-                var json = Decrypt(encrypted).Replace("\r\n", "\n");
-
-                return JsonSerializer.Deserialize<List<TemplateItem>>(json)
-                       ?? new List<TemplateItem>();
+                if (LanguageManager.EnableTemplateEncryption)
+                {
+                    var encrypted = File.ReadAllBytes(file);
+                    var json = Decrypt(encrypted).Replace("\r\n", "\n");
+                    return JsonSerializer.Deserialize<List<TemplateItem>>(json)
+                           ?? new List<TemplateItem>();
+                }
+                else
+                {
+                    var json = File.ReadAllText(file).Replace("\r\n", "\n");
+                    return JsonSerializer.Deserialize<List<TemplateItem>>(json)
+                           ?? new List<TemplateItem>();
+                }
             }
             catch
             {
@@ -72,6 +81,8 @@ namespace PhraseLauncher
             }
         }
 
+        /* ================= Save ================= */
+
         public static void Save(string file, List<TemplateItem> list)
         {
             var json = JsonSerializer.Serialize(
@@ -79,33 +90,84 @@ namespace PhraseLauncher
                 new JsonSerializerOptions { WriteIndented = true }
             );
 
-            var encrypted = Encrypt(json);
-            File.WriteAllBytes(file, encrypted);
+            if (LanguageManager.EnableTemplateEncryption)
+            {
+                File.WriteAllBytes(file, Encrypt(json));
+            }
+            else
+            {
+                File.WriteAllText(file, json);
+            }
         }
 
-        /* ================= Groups ================= */
+        /* ================= Encryption Toggle ================= */
+
+        public static void ApplyEncryptionSetting(bool enable)
+        {
+            if (!Directory.Exists(JsonFolder)) return;
+
+            foreach (var file in Directory.GetFiles(JsonFolder, "*.json"))
+            {
+            	// groups.json は除外
+                if (Path.GetFileNameWithoutExtension(file) == "groups")
+                    continue;
+
+                try
+                {
+                    var list = LoadAuto(file);
+
+                    var json = JsonSerializer.Serialize(
+                        list,
+                        new JsonSerializerOptions { WriteIndented = true }
+                    );
+
+                    if (enable)
+                        File.WriteAllBytes(file, Encrypt(json));
+                    else
+                        File.WriteAllText(file, json);
+                }
+                catch
+                {
+                    // 変換失敗時は何もしない
+                }
+            }
+        }
+        private static List<TemplateItem> LoadAuto(string file)
+        {
+            // まず暗号化として試す
+            try
+            {
+                var encrypted = File.ReadAllBytes(file);
+                var json = Decrypt(encrypted).Replace("\r\n", "\n");
+
+                return JsonSerializer.Deserialize<List<TemplateItem>>(json)
+                       ?? new List<TemplateItem>();
+            }
+            catch
+            {
+                // だめなら平文
+                try
+                {
+                    var json = File.ReadAllText(file).Replace("\r\n", "\n");
+                    return JsonSerializer.Deserialize<List<TemplateItem>>(json)
+                           ?? new List<TemplateItem>();
+                }
+                catch
+                {
+                    return new List<TemplateItem>();
+                }
+            }
+        }
 
         public static string[] GetGroupNames()
         {
             if (!Directory.Exists(JsonFolder))
                 return Array.Empty<string>();
 
-            var files = Directory.GetFiles(JsonFolder, "*.json");
-
-            var names = new List<string>();
-            foreach (var file in files)
-            {
-                var name = Path.GetFileNameWithoutExtension(file);
-
-                // groups.json は除外
-                if (name == "groups")
-                    continue;
-
-                names.Add(name);
-            }
-
-            return names.ToArray();
+            return Directory.GetFiles(JsonFolder, "*.json")
+                .Select(f => Path.GetFileNameWithoutExtension(f))
+                .Where(n => n != "groups")
+                .ToArray();
         }
-
     }
 }

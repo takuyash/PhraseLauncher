@@ -10,6 +10,7 @@ namespace PhraseLauncher
         private Label lblLang;
         private Button btnSave;
         private CheckBox chkEnableHotKey;
+        private CheckBox chkEncrypt;
 
         private ComboBox cmbCtrlCount;
         private Label lblCtrlCount;
@@ -19,7 +20,7 @@ namespace PhraseLauncher
 
         public SettingForm()
         {
-            this.Size = new Size(300, 300);
+            this.Size = new Size(320, 340);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
@@ -27,7 +28,7 @@ namespace PhraseLauncher
             this.Icon = Program.AppIcon;
 
             lblLang = new Label { Location = new Point(20, 20), AutoSize = true };
-            langCombo = new ComboBox { Location = new Point(20, 45), Width = 240, DropDownStyle = ComboBoxStyle.DropDownList };
+            langCombo = new ComboBox { Location = new Point(20, 45), Width = 260, DropDownStyle = ComboBoxStyle.DropDownList };
             langCombo.Items.Add("日本語 (Japanese)");
             langCombo.Items.Add("English");
             langCombo.SelectedIndex = LanguageManager.CurrentLanguage == "en" ? 1 : 0;
@@ -35,59 +36,51 @@ namespace PhraseLauncher
             chkEnableHotKey = new CheckBox
             {
                 Location = new Point(20, 80),
-                Width = 240,
+                Width = 260,
                 Checked = LanguageManager.EnableHotKey
             };
 
-            lblTriggerKey = new Label
+            chkEncrypt = new CheckBox
             {
                 Location = new Point(20, 110),
-                AutoSize = true
+                Width = 260,
+                Checked = LanguageManager.EnableTemplateEncryption
             };
 
-            cmbTriggerKey = new ComboBox
-            {
-                Location = new Point(20, 135),
-                Width = 120,
-                DropDownStyle = ComboBoxStyle.DropDownList
-            };
+            lblTriggerKey = new Label { Location = new Point(20, 145), AutoSize = true };
+            cmbTriggerKey = new ComboBox { Location = new Point(20, 170), Width = 120, DropDownStyle = ComboBoxStyle.DropDownList };
             cmbTriggerKey.Items.AddRange(new object[] { "Ctrl", "Shift", "Alt", "Space" });
             cmbTriggerKey.SelectedItem = LanguageManager.TriggerKey;
 
-            lblCtrlCount = new Label
-            {
-                Location = new Point(20, 170),
-                AutoSize = true
-            };
-
-            cmbCtrlCount = new ComboBox
-            {
-                Location = new Point(20, 195),
-                Width = 80,
-                DropDownStyle = ComboBoxStyle.DropDownList
-            };
+            lblCtrlCount = new Label { Location = new Point(160, 145), AutoSize = true };
+            cmbCtrlCount = new ComboBox { Location = new Point(160, 170), Width = 80, DropDownStyle = ComboBoxStyle.DropDownList };
             cmbCtrlCount.Items.AddRange(new object[] { "2", "3", "4", "5" });
             cmbCtrlCount.SelectedItem = LanguageManager.CtrlPressCount.ToString();
 
-            btnSave = new Button { Location = new Point(185, 230), Width = 75 };
+            btnSave = new Button { Location = new Point(205, 240), Width = 75 };
             btnSave.Click += (s, e) =>
             {
+                bool oldEnc = LanguageManager.EnableTemplateEncryption;
+
                 LanguageManager.SaveLanguage(langCombo.SelectedIndex == 1 ? "en" : "ja");
                 LanguageManager.SaveEnableHotKey(chkEnableHotKey.Checked);
                 LanguageManager.SaveTriggerKey(cmbTriggerKey.SelectedItem.ToString());
                 LanguageManager.SaveCtrlPressCount(int.Parse(cmbCtrlCount.SelectedItem.ToString()));
+                LanguageManager.SaveTemplateEncryption(chkEncrypt.Checked);
+
+                if (oldEnc != chkEncrypt.Checked)
+                    TemplateRepository.ApplyEncryptionSetting(chkEncrypt.Checked);
+
                 this.Close();
             };
 
-            this.Controls.AddRange(new Control[]
+            Controls.AddRange(new Control[]
             {
-                lblLang,
-                langCombo,
+                lblLang, langCombo,
                 chkEnableHotKey,
-                lblTriggerKey,
-                cmbTriggerKey,
-                lblCtrlCount,
-                cmbCtrlCount,
+                chkEncrypt,
+                lblTriggerKey, cmbTriggerKey,
+                lblCtrlCount, cmbCtrlCount,
                 btnSave
             });
 
@@ -99,6 +92,7 @@ namespace PhraseLauncher
             this.Text = LanguageManager.GetString("SettingTitle");
             lblLang.Text = LanguageManager.GetString("SettingLang");
             chkEnableHotKey.Text = LanguageManager.GetString("SettingEnableHotKey");
+            chkEncrypt.Text = LanguageManager.GetString("SettingEncryptTemplate");
             lblTriggerKey.Text = LanguageManager.GetString("SettingTriggerKey");
             lblCtrlCount.Text = LanguageManager.GetString("SettingLaunchKeyCount");
             btnSave.Text = LanguageManager.GetString("BtnSave");

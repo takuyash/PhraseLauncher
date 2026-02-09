@@ -17,6 +17,7 @@ namespace PhraseLauncher
         public static string CurrentLanguage { get; private set; } = "ja";
 
         public static bool EnableHotKey { get; private set; } = true;
+        public static bool EnableTemplateEncryption { get; private set; } = true;
 
         public static event Action LanguageChanged;
 
@@ -48,6 +49,9 @@ namespace PhraseLauncher
 
             GetPrivateProfileString("Settings", "TriggerKey", "Ctrl", temp, 255, IniPath);
             _triggerKey = temp.ToString();
+
+            GetPrivateProfileString("Settings", "EnableTemplateEncryption", "true", temp, 255, IniPath);
+            EnableTemplateEncryption = bool.TryParse(temp.ToString(), out bool enc) ? enc : true;
         }
 
         public static void SaveLanguage(string lang)
@@ -80,6 +84,11 @@ namespace PhraseLauncher
             _triggerKey = key;
             WritePrivateProfileString("Settings", "TriggerKey", key, IniPath);
         }
+        public static void SaveTemplateEncryption(bool enabled)
+        {
+            EnableTemplateEncryption = enabled;
+            WritePrivateProfileString("Settings", "EnableTemplateEncryption", enabled.ToString(), IniPath);
+        }
 
         private static readonly Dictionary<string, string> Japanese = new()
         {
@@ -101,6 +110,7 @@ namespace PhraseLauncher
             { "SettingEnableHotKey", "ホットキーを有効にする" },
             { "SettingTriggerKey", "起動キー" },
             { "SettingLaunchKeyCount", "連打回数(2～5)回" },
+            { "SettingEncryptTemplate", "定型文を暗号化して保存" },
             { "BtnSave", "保存" },
             // JsonEditorForm
             { "EditorTitle", "定型文編集・登録" },
@@ -158,6 +168,7 @@ namespace PhraseLauncher
             { "SettingEnableHotKey", "Enable hotkey" },
             { "SettingTriggerKey", "Trigger key" },
             { "SettingLaunchKeyCount", "press count(2-5):" },
+            { "SettingEncryptTemplate", "Encrypt templates when saving" },
             { "BtnSave", "Save" },
             // JsonEditorForm
             { "EditorTitle", "Edit/Register Phrases" },

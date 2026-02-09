@@ -57,23 +57,30 @@ namespace PhraseLauncher
 
             foreach (var t in list)
             {
-                sb.Append('"').Append(Escape(t.text)).Append("\",");
-                sb.Append('"').Append(Escape(t.note)).Append('"');
-                sb.AppendLine();
+                sb.Append(CsvField(t.text))
+                  .Append(',')
+                  .Append(CsvField(t.note))
+                  .AppendLine();
             }
 
-            File.WriteAllText(path, sb.ToString(), Encoding.UTF8);
+            // BOM付きUTF-8
+            File.WriteAllText(path, sb.ToString(), new UTF8Encoding(true));
         }
 
-        private static string Escape(string s)
-            => (s ?? "").Replace("\"", "\"\"");
+        // CSV用フィールド生成（改行・カンマ・ダブルクォート完全対応）
+        private static string CsvField(string value)
+        {
+            if (value == null)
+                return "\"\"";
 
+            return "\"" + value.Replace("\"", "\"\"") + "\"";
+        }
 
         public static bool Import(
-    string filePath,
-    string groupName,
-    PhraseTransferFormat format,
-    out string error)
+            string filePath,
+            string groupName,
+            PhraseTransferFormat format,
+            out string error)
         {
             error = "";
 
@@ -120,15 +127,40 @@ namespace PhraseLauncher
 
         private static List<TemplateItem> ImportCsv(string path)
         {
-            var lines = File.ReadAllLines(path);
-            if (lines.Length < 2 || !lines[0].StartsWith("Phrase"))
-                throw new Exception("Invalid CSV header.");
-
             var list = new List<TemplateItem>();
 
-            for (int i = 1; i < lines.Length; i++)
+            using var reader = new StreamReader(path, Encoding.UTF8);
+
+            // ヘッダ
+            var header = reader.ReadLine();
+            if (header == null)
+                throw new Exception("Invalid CSV header.");
+
+            // BOM除去
+            header = header.TrimStart('\uFEFF');
+
+            if (!header.StartsWith("Phrase"))
+                throw new Exception("Invalid CSV header.");
+
+            var record = new StringBuilder();
+            bool inQuotes = false;
+
+            while (!reader.EndOfStream)
             {
-                var cols = ParseCsvLine(lines[i]);
+                var line = reader.ReadLine();
+
+                if (record.Length > 0)
+                    record.Append('\n');
+
+                record.Append(line);
+
+                inQuotes = IsOpenQuote(record.ToString());
+                if (inQuotes)
+                    continue;
+
+                var cols = ParseCsvRecord(record.ToString());
+                record.Clear();
+
                 if (cols.Length < 2)
                     continue;
 
@@ -141,34 +173,65 @@ namespace PhraseLauncher
 
             return list;
         }
-        private static string[] ParseCsvLine(string line)
-        {
-            var list = new List<string>();
-            var sb = new StringBuilder();
-            bool quoted = false;
 
-            foreach (var c in line)
+        private static bool IsOpenQuote(string s)
+        {
+            bool inQuotes = false;
+
+            for (int i = 0; i < s.Length; i++)
             {
+                if (s[i] == '"')
+                {
+                    // "" はエスケープ
+                    if (i + 1 < s.Length && s[i + 1] == '"')
+                    {
+                        i++;
+                        continue;
+                    }
+                    inQuotes = !inQuotes;
+                }
+            }
+            return inQuotes;
+        }
+
+        private static string[] ParseCsvRecord(string record)
+        {
+            var result = new List<string>();
+            var sb = new StringBuilder();
+            bool inQuotes = false;
+
+            for (int i = 0; i < record.Length; i++)
+            {
+                char c = record[i];
+
                 if (c == '"')
                 {
-                    quoted = !quoted;
+                    if (inQuotes && i + 1 < record.Length && record[i + 1] == '"')
+                    {
+                        sb.Append('"'); // "" → "
+                        i++;
+                    }
+                    else
+                    {
+                        inQuotes = !inQuotes;
+                    }
                     continue;
                 }
 
-                if (c == ',' && !quoted)
+                if (c == ',' && !inQuotes)
                 {
-                    list.Add(sb.ToString());
+                    result.Add(sb.ToString());
                     sb.Clear();
+                    continue;
                 }
-                else
-                {
-                    sb.Append(c);
-                }
+
+                sb.Append(c);
             }
 
-            list.Add(sb.ToString());
-            return list.ToArray();
+            result.Add(sb.ToString());
+            return result.ToArray();
         }
+
         public static string[] GetGroupNames()
         {
             if (!Directory.Exists(TemplateRepository.JsonFolder))
@@ -179,7 +242,5 @@ namespace PhraseLauncher
                 .Where(n => n != "groups")
                 .ToArray();
         }
-
-
     }
 }

@@ -22,7 +22,7 @@ This software is **freeware** and can be used at no cost.
 ---
 
 ## System Requirements
-- Windows 11
+- Windows 11 / Windows10
 
 ---
 
@@ -94,6 +94,14 @@ Press `Esc` to instantly close the launcher.
 
 ### 9. Available in Japanese and English
 You can switch between Japanese and English in the settings screen.
+
+### 10. Encryption Feature
+You can save predefined phrases in an encrypted form.  
+You can turn encryption on or off from the settings screen.  
+
+### 11.Import and Export of Predefined Phrases
+You can import and export predefined phrases.  
+You can choose the format from CSV or JSON.  
 
 ---
 
@@ -224,7 +232,15 @@ Shift + Enter で改行も入力できます。
 ランチャー画面を閉じる時もescキーですぐに閉じることができます。  
 
 9. 日本語と英語で使用可能  
-設定画面で日本語と英語の切り替えが可能です。  
+設定画面で日本語と英語の切り替えが可能です。 
+
+10. 暗号化機能  
+定型文を暗号化して保存することができます。  
+暗号化のオンオフは設定画面から切り替えることができます。  
+
+11. 定型文のインポート、エクスポート  
+定型文のインポート、エクスポートができます。  
+形式は、CSVとJSON形式から選べます。  
 
 ## 画面
 ### ランチャー画面  

@@ -71,14 +71,15 @@ By default, it uses double Ctrl, but both the key type and the number of presses
 You can also enable or disable hotkey activation entirely.
 
 ### 3. Keyword Search
-Quickly search for phrases using keywords.
+Quickly search for phrases using keywords.  
+It is also possible to search including notes.  
 
 ### 4. Phrase Editing and Registration
 You can register and edit predefined phrases.  
 Line breaks can be inserted using **Shift + Enter**.
 
 ### 5. Grouping Functionality
-- Register, edit, delete, and reorder phrases by group  
+- You can register, edit, delete, and reorder predefined phrases by group (including multiple rows at once).
 - Edit, delete, and reorder group names  
 
 ### 6. No Unnecessary Settings
@@ -212,12 +213,13 @@ Windows 11 / Windows 10
 
 3. キーワード検索機能  
 キーワードによる検索ができます。  
+メモも含めての検索も可能です。
 
 4. 定型文編集登録機能  
 Shift + Enter で改行も入力できます。  
 
 5. グループ分け機能  
-・グループごとに定型文の登録、編集、削除、並び替えができます。  
+・グループごとに定型文の登録、編集、削除、並び替え(複数行まとめて)ができます。  
 ・グループ名の編集や削除、並び替えもできます。  
 
 6. 不要な設定がない  
@@ -240,7 +242,7 @@ Shift + Enter で改行も入力できます。
 
 11. 定型文のインポート、エクスポート  
 定型文のインポート、エクスポートができます。  
-形式は、CSVとJSON形式から選べます。  
+形式はCSVとJSON形式から選べます。  
 
 ## 画面
 ### ランチャー画面  

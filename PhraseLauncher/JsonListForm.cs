@@ -91,6 +91,16 @@ namespace PhraseLauncher
 
             Program.JsonForm = form;
 
+            // アプリのカーソルが他に移ったら画面を閉じる
+            form.Deactivate += (s, e) =>
+            {
+                if (form.Visible)
+                {
+                    form.Close();
+                    Program.JsonForm = null;
+                }
+            };
+
             // 言語変更時にタイトルを更新
             Action updateTitle = () => form.Text = LanguageManager.GetString("ListTitle");
             LanguageManager.LanguageChanged += updateTitle;

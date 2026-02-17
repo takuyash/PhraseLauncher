@@ -101,23 +101,30 @@ namespace PhraseLauncher
                 }
             };
 
+            // メモ検索切り替え
+            CheckBox includeNoteCheck = new()
+            {
+                Text = LanguageManager.GetString("ListIncludeNote"),
+                Dock = DockStyle.Right,
+                Width = 110,
+                Checked = true
+            };
+
             // 言語変更時にタイトルを更新
-            Action updateTitle = () => form.Text = LanguageManager.GetString("ListTitle");
-            LanguageManager.LanguageChanged += updateTitle;
-            form.FormClosed += (s, e) => LanguageManager.LanguageChanged -= updateTitle;
+            Action updateLang = () =>
+            {
+                form.Text = LanguageManager.GetString("ListTitle");
+                includeNoteCheck.Text = LanguageManager.GetString("ListIncludeNote");
+            };
+
+            LanguageManager.LanguageChanged += updateLang;
+            form.FormClosed += (s, e) => LanguageManager.LanguageChanged -= updateLang;
 
             // 検索パネル
             Panel searchPanel = new() { Dock = DockStyle.Top, Height = 30, Padding = new Padding(5) };
             TextBox searchBox = new() { Dock = DockStyle.Fill };
 
-            // メモ検索切り替え
-            CheckBox includeNoteCheck = new()
-            {
-                Text = "メモも含める",
-                Dock = DockStyle.Right,
-                Width = 110,
-                Checked = true
-            };
+
 
             searchPanel.Controls.Add(searchBox);
             searchPanel.Controls.Add(includeNoteCheck);

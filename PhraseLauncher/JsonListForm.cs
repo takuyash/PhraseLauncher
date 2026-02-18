@@ -23,6 +23,13 @@ namespace PhraseLauncher
 
         public static void Show()
         {
+            //他の画面が開かれているときは表示しない
+            foreach (Form f in Application.OpenForms)
+            {
+                if (f == Program.JsonForm) continue;
+                if (f.Visible) return;
+            }
+
             if (Program.JsonForm != null && !Program.JsonForm.IsDisposed)
             {
                 Program.JsonForm.BringToFront();

@@ -117,6 +117,7 @@ namespace PhraseLauncher
             { "EditorTitle", "定型文編集・登録" },
             { "EditorNew", "新規作成" },
             { "EditorRename", "グループ名変更" },
+            { "EditorGroupOrder", "グループ順序入替" },
             { "EditorDeleteGroup", "グループ削除" },
             { "EditorSave", "保存" },
             { "EditorDelete", "削除" },
@@ -146,7 +147,11 @@ namespace PhraseLauncher
             { "TransferImportUpdate", "グループを更新" },
             { "TransferSelectGroup", "グループを選択してください。" },
             { "TransferConfirmTitle", "確認" },
-            { "TransferConfirmMessage", "ファイル: {0}\nモード: {1}\nグループ: {2}\n\n実行してよろしいですか？" }
+            { "TransferConfirmMessage", "ファイル: {0}\nモード: {1}\nグループ: {2}\n\n実行してよろしいですか？" },
+            // GroupReorderForm
+            { "GroupReorderTitle", "グループ順序入替" },
+            { "GroupReorderSave", "保存" },
+            { "GroupReorderGroup", "グループ" }
         };
 
         private static readonly Dictionary<string, string> English = new()
@@ -176,6 +181,7 @@ namespace PhraseLauncher
             { "EditorTitle", "Edit/Register Phrases" },
             { "EditorNew", "New" },
             { "EditorRename", "Rename" },
+            { "EditorGroupOrder", "ChangeOrder" },
             { "EditorDeleteGroup", "Delete Group" },
             { "EditorSave", "Save" },
             { "EditorDelete", "Delete" },
@@ -205,7 +211,11 @@ namespace PhraseLauncher
             { "TransferImportUpdate", "Update existing group" },
             { "TransferSelectGroup", "Please select a group." },
             { "TransferConfirmTitle", "Confirm" },
-            { "TransferConfirmMessage","File: {0}\nMode: {1}\nGroup: {2}\n\nDo you want to continue?" }
+            { "TransferConfirmMessage","File: {0}\nMode: {1}\nGroup: {2}\n\nDo you want to continue?" },
+            // GroupReorderForm
+            { "GroupReorderTitle", "ChangeGroupOrder" },
+            { "GroupReorderSave", "Save" },
+            { "GroupReorderGroup", "Group" }
         };
     }
 }

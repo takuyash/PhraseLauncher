@@ -31,11 +31,9 @@ namespace PhraseLauncher
             fileCombo.SetBounds(10, 10, 300, 25);
 
             Button newBtn = new() { Text = LanguageManager.GetString("EditorNew"), Left = 320, Top = 10, Width = 80 };
-            Button renameBtn = new() { Text = LanguageManager.GetString("EditorRename"), Left = 410, Top = 10, Width = 90 };
+            Button renameBtn = new() { Text = LanguageManager.GetString("EditorRename"), Left = 400, Top = 10, Width = 90 };
+            Button reorderBtn = new() { Text = LanguageManager.GetString("EditorGroupOrder"), Left = 490,Top = 10,Width = 100 };
             Button deleteGroupBtn = new() { Text = LanguageManager.GetString("EditorDeleteGroup"), Left = 590, Top = 10, Width = 90 };
-
-            Button groupUpBtn = new() { Text = "▲", Left = 500, Top = 10, Width = 40 };
-            Button groupDownBtn = new() { Text = "▼", Left = 545, Top = 10, Width = 40 };
 
             dgv.SetBounds(10, 40, 660, 380);
             dgv.AllowUserToAddRows = true;
@@ -90,6 +88,27 @@ namespace PhraseLauncher
                     dgv.Rows.Remove(dgv.CurrentRow);
             };
 
+
+
+            reorderBtn.Click += (s, e) =>
+            {
+                using var f = new GroupReorderForm(
+                    fileCombo.Items.Cast<string>().ToList()
+                );
+
+                if (f.ShowDialog() == DialogResult.OK)
+                {
+                    fileCombo.Items.Clear();
+                    foreach (var name in f.ResultOrder)
+                        fileCombo.Items.Add(name);
+
+                    if (fileCombo.Items.Count > 0)
+                        fileCombo.SelectedIndex = 0;
+
+                    SaveGroupOrder();
+                }
+            };
+
             newBtn.Click += (s, e) => CreateNewFile();
             renameBtn.Click += (s, e) => RenameFile();
             deleteGroupBtn.Click += (s, e) => DeleteGroup();
@@ -97,8 +116,6 @@ namespace PhraseLauncher
             upBtn.Click += (s, e) => MoveRow(-1);
             downBtn.Click += (s, e) => MoveRow(1);
 
-            groupUpBtn.Click += (s, e) => MoveGroup(-1);
-            groupDownBtn.Click += (s, e) => MoveGroup(1);
 
             if (fileCombo.Items.Count > 0)
                 fileCombo.SelectedIndex = 0;
@@ -106,7 +123,7 @@ namespace PhraseLauncher
             Controls.AddRange(new Control[]
             {
                 fileCombo, newBtn, renameBtn, deleteGroupBtn,
-                groupUpBtn, groupDownBtn,
+                reorderBtn,
                 dgv, saveBtn, delBtn, upBtn, downBtn
             });
         }

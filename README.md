@@ -21,6 +21,14 @@ This software is **freeware** and can be used at no cost.
 
 ---
 
+## Privacy and Keyboard Input Handling
+
+This application detects keyboard input events solely to enable the launcher hotkey feature.  
+No keystroke content is recorded or transmitted.  
+No personal information is collected.  
+
+---
+
 ## System Requirements
 - Windows 11 / Windows 10
 
@@ -172,6 +180,12 @@ Windowsでは、Windowsキー + Vでクリップボードの履歴の入力や�
    
 ## 動作環境
 Windows 11 / Windows 10
+
+## プライバシー・入力検知について
+
+本アプリはランチャー起動のホットキー機能のため、キーボード入力イベントを検知します。  
+入力された文字内容の保存・送信は行いません。  
+個人情報の収集は行いません。  
 
 ## 使い方（クイックスタート）
 0. 下記から最新バージョンをダウンロードし、任意の場所に解凍します  

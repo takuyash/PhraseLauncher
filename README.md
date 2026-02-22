@@ -21,6 +21,11 @@ This software is **freeware** and can be used at no cost.
 
 ---
 
+## Concept
+   <img src="screenshots/concept_en.png" width="40%">  
+
+---
+
 ## Privacy and Keyboard Input Handling
 
 This application detects keyboard input events solely to enable the launcher hotkey feature.  
@@ -177,6 +182,11 @@ Windowsでは、Windowsキー + Vでクリップボードの履歴の入力や�
 
 ## 画面動作
    <img src="screenshots/launcherSample.png" width="40%">  
+   
+---
+
+## コンセプト
+   <img src="screenshots/concept.png" width="40%">  
    
 ## 動作環境
 Windows 11 / Windows 10

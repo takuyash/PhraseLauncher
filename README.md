@@ -186,7 +186,7 @@ Windowsでは、Windowsキー + Vでクリップボードの履歴の入力や�
 ---
 
 ## コンセプト
-   <img src="screenshots/concept.png" width="40%">  
+   <img src="screenshots/concept_en.png" width="40%">  
    
 ## 動作環境
 Windows 11 / Windows 10

@@ -17,6 +17,21 @@ namespace PhraseLauncher
         [STAThread]
         static void Main()
         {
+            // ==========================================
+            // 二重起動防止
+            // ==========================================
+            bool createdNew;
+
+            using Mutex mutex = new Mutex(
+                true,
+                "PhraseLauncher_SingleInstance",
+                out createdNew);
+
+            // すでに起動している場合は何もせず終了
+            if (!createdNew)
+            {
+                return;
+            }
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 

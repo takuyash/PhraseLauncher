@@ -136,7 +136,33 @@ namespace PhraseLauncher
             searchPanel.Controls.Add(searchBox);
             searchPanel.Controls.Add(includeNoteCheck);
 
-            TabControl tab = new() { Dock = DockStyle.Fill };
+            TabControl tab = new()
+            {
+                Dock = DockStyle.Fill,
+                DrawMode = TabDrawMode.OwnerDrawFixed
+            };
+
+            tab.DrawItem += (s, e) =>
+            {
+                TabPage page = tab.TabPages[e.Index];
+
+                bool selected = (e.Index == tab.SelectedIndex);
+
+                e.Graphics.FillRectangle(
+                    selected ? Brushes.DodgerBlue : SystemBrushes.Control,
+                    e.Bounds
+                );
+
+                TextRenderer.DrawText(
+                    e.Graphics,
+                    page.Text,
+                    page.Font,
+                    e.Bounds,
+                    selected ? Color.White : Color.Black,
+                    TextFormatFlags.HorizontalCenter |
+                    TextFormatFlags.VerticalCenter
+                );
+            };
 
             // データのロード
             List<List<TemplateItem>> originalData = new();

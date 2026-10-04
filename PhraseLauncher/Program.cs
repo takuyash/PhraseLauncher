@@ -3,7 +3,6 @@ using System.Drawing;
 using System.IO;
 
 
-
 namespace PhraseLauncher
 {
     static class Program

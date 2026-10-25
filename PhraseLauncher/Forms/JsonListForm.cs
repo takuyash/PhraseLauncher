@@ -128,12 +128,14 @@ namespace PhraseLauncher
             form.FormClosed += (s, e) => LanguageManager.LanguageChanged -= updateLang;
 
             // 検索パネル
-            Panel searchPanel = new() { Dock = DockStyle.Top, Height = 30, Padding = new Padding(5) };
-            TextBox searchBox = new() { Dock = DockStyle.Fill };
+            Panel searchPanel = new() { Dock = DockStyle.Top, Height = 40, Padding = new Padding(8, 6, 8, 6), BackColor = Color.FromArgb(247, 248, 250) };
+            SearchBoxFrame searchFrame = new() { Dock = DockStyle.Fill };
+            TextBox searchBox = searchFrame.TextBox;
+            includeNoteCheck.Padding = new Padding(10, 0, 0, 0);
 
 
 
-            searchPanel.Controls.Add(searchBox);
+            searchPanel.Controls.Add(searchFrame);
             searchPanel.Controls.Add(includeNoteCheck);
 
             // タブ本体（ヘッダーは ModernTabStrip で描画）

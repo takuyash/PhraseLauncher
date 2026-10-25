@@ -136,33 +136,9 @@ namespace PhraseLauncher
             searchPanel.Controls.Add(searchBox);
             searchPanel.Controls.Add(includeNoteCheck);
 
-            TabControl tab = new()
-            {
-                Dock = DockStyle.Fill,
-                DrawMode = TabDrawMode.OwnerDrawFixed
-            };
-
-            tab.DrawItem += (s, e) =>
-            {
-                TabPage page = tab.TabPages[e.Index];
-
-                bool selected = (e.Index == tab.SelectedIndex);
-
-                e.Graphics.FillRectangle(
-                    selected ? Brushes.DodgerBlue : SystemBrushes.Control,
-                    e.Bounds
-                );
-
-                TextRenderer.DrawText(
-                    e.Graphics,
-                    page.Text,
-                    page.Font,
-                    e.Bounds,
-                    selected ? Color.White : Color.Black,
-                    TextFormatFlags.HorizontalCenter |
-                    TextFormatFlags.VerticalCenter
-                );
-            };
+            // タブ本体（ヘッダーは ModernTabStrip で描画）
+            TabControl tab = new HeaderlessTabControl { Dock = DockStyle.Fill };
+            ModernTabStrip tabStrip = new(tab);
 
             // データのロード
             List<List<TemplateItem>> originalData = new();
@@ -209,7 +185,7 @@ namespace PhraseLauncher
             // タブとリストの生成
             for (int i = 0; i < files.Length; i++)
             {
-                ListBox lb = new() { Dock = DockStyle.Fill, IntegralHeight = false };
+                ListBox lb = new() { Dock = DockStyle.Fill, IntegralHeight = false, BorderStyle = BorderStyle.None };
                 ToolTip tip = new();
                 lb.MouseMove += (s, e) =>
                 {
@@ -250,7 +226,11 @@ namespace PhraseLauncher
                 // ダブルクリック
                 lb.DoubleClick += (s, e) => { if (lb.Tag is List<TemplateItem> items) ExecuteSelected(lb, items, form); };
 
-                var page = new TabPage(Path.GetFileNameWithoutExtension(files[i]));
+                var page = new TabPage(Path.GetFileNameWithoutExtension(files[i]))
+                {
+                    BackColor = Color.White,
+                    Padding = new Padding(6, 4, 0, 0)
+                };
                 page.Controls.Add(lb);
                 tab.TabPages.Add(page);
             }
@@ -306,6 +286,7 @@ namespace PhraseLauncher
             };
 
             form.Controls.Add(tab);
+            form.Controls.Add(tabStrip);
             form.Controls.Add(searchPanel);
 
             updateLists();

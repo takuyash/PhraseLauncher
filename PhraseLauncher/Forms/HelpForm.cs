@@ -16,56 +16,80 @@ namespace PhraseLauncher
         private const string HelpUrl = "https://takuyash.github.io/PhraseLauncherSite/docs.html";
         private const string LicenseUrl = "https://github.com/takuyash/PhraseLauncher/blob/main/LICENSE";
 
-        private LinkLabel lnkRepo, lnkHelp, lnkLicense, lnkUpdate;
+        private const int Margin_ = 16;
+        private const int CardWidth = 368;
+
+        private LinkRow lnkRepo, lnkHelp, lnkLicense;
+        private LinkRow? lnkUpdate;
+        private CardPanel card;
 
         public HelpForm()
         {
-            this.Size = new Size(420, 260);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Icon = Program.AppIcon;
+            this.BackColor = UiTheme.Surface;
+            this.Font = UiTheme.Font;
 
-            var panel = new FlowLayoutPanel()
+            /* ===== ヘッダー（アイコン・アプリ名・バージョン） ===== */
+            var picture = new PictureBox
             {
-                Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.TopDown,
-                Padding = new Padding(15),
-                AutoScroll = true
+                Bounds = new Rectangle(Margin_ + 4, Margin_ + 4, 48, 48),
+                SizeMode = PictureBoxSizeMode.Zoom
             };
-            this.Controls.Add(panel);
+            if (Program.AppIcon != null)
+                picture.Image = new Icon(Program.AppIcon, 48, 48).ToBitmap();
 
-            // アプリ名
-            panel.Controls.Add(new Label()
+            var lblName = new Label
             {
                 Text = "PhraseLauncher",
-                Font = new Font(Font.FontFamily, 12, FontStyle.Bold),
-                AutoSize = true
-            });
-
-            // バージョン
-            panel.Controls.Add(new Label()
-            {
-                Text = $"Version: {GetVersion()}",
+                Font = UiTheme.TitleFont,
+                ForeColor = UiTheme.TextStrong,
                 AutoSize = true,
-                Margin = new Padding(0, 5, 0, 15)
-            });
+                Location = new Point(picture.Right + 14, picture.Top - 2)
+            };
 
-            lnkRepo = CreateLink("", GitHubRepoUrl) as LinkLabel;
-            lnkHelp = CreateLink("", HelpUrl) as LinkLabel;
-            lnkLicense = CreateLink("", LicenseUrl) as LinkLabel;
+            var lblVersion = new Label
+            {
+                Text = $"Version {GetVersion()}",
+                Font = UiTheme.Font,
+                ForeColor = UiTheme.TextMuted,
+                AutoSize = true,
+                Location = new Point(lblName.Left + 2, picture.Top + 30)
+            };
 
-            panel.Controls.Add(lnkRepo);
-            panel.Controls.Add(lnkHelp);
-            panel.Controls.Add(lnkLicense);
+            /* ===== リンク ===== */
+            lnkRepo = CreateLink(GitHubRepoUrl);
+            lnkHelp = CreateLink(HelpUrl);
+            lnkLicense = CreateLink(LicenseUrl);
+
+            var links = new[] { lnkRepo, lnkHelp, lnkLicense };
+            card = new CardPanel
+            {
+                Bounds = new Rectangle(Margin_, picture.Bottom + 20, CardWidth, links.Length * 48)
+            };
+            for (int i = 0; i < links.Length; i++)
+            {
+                links[i].Bounds = new Rectangle(1, i * 48, CardWidth - 2, 48);
+                links[i].ShowDivider = i > 0;
+                card.Controls.Add(links[i]);
+            }
+
+            ClientSize = new Size(CardWidth + Margin_ * 2, card.Bottom + Margin_);
+            this.Controls.AddRange(new Control[] { picture, lblName, lblVersion, card });
 
             LanguageManager.LanguageChanged += UpdateText;
             UpdateText();
 
-            // 非同期でチェック
-            this.Load += async (s, e) => await CheckForUpdateAsync(panel);
-            this.FormClosed += (s, e) => LanguageManager.LanguageChanged -= UpdateText;
+            // 非同期でチェック
+            this.Load += async (s, e) => await CheckForUpdateAsync();
+            this.FormClosed += (s, e) =>
+            {
+                LanguageManager.LanguageChanged -= UpdateText;
+                LanguageManager.LanguageChanged -= UpdateUpdateLinkText;
+            };
         }
 
         private void UpdateText()
@@ -81,28 +105,23 @@ namespace PhraseLauncher
             return Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown";
         }
 
-        private Control CreateLink(string text, string url)
+        private static LinkRow CreateLink(string url)
         {
-            var link = new LinkLabel()
-            {
-                Text = text,
-                AutoSize = true,
-                Margin = new Padding(0, 5, 0, 5)
-            };
-
-            link.LinkClicked += (s, e) =>
-            {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = url,
-                    UseShellExecute = true
-                });
-            };
-
+            var link = new LinkRow();
+            link.Click += (s, e) => OpenUrl(url);
             return link;
         }
 
-        private async Task CheckForUpdateAsync(Control parent)
+        private static void OpenUrl(string url)
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true
+            });
+        }
+
+        private async Task CheckForUpdateAsync()
         {
             try
             {
@@ -118,32 +137,25 @@ namespace PhraseLauncher
                 var tag = root.GetProperty("tag_name").GetString();
                 var url = root.GetProperty("html_url").GetString();
 
-                if (string.IsNullOrEmpty(tag)) return;
+                if (string.IsNullOrEmpty(tag) || string.IsNullOrEmpty(url) || IsDisposed) return;
 
                 var latest = new Version(tag.TrimStart('v', 'V'));
                 var current = Assembly.GetExecutingAssembly().GetName().Version;
 
                 if (current != null && latest > current)
                 {
-                    lnkUpdate = new LinkLabel()
+                    // カードの下にお知らせバナーを追加し、その分ウィンドウを伸ばす
+                    lnkUpdate = new LinkRow
                     {
-                        Text = string.Format(LanguageManager.GetString("HelpUpdate"), latest),
-                        AutoSize = true,
-                        LinkColor = Color.DarkRed,
-                        Margin = new Padding(0, 15, 0, 0),
+                        Highlight = true,
+                        Bounds = new Rectangle(Margin_, card.Bottom + 12, CardWidth, 44),
                         Tag = latest // バージョン値を保持
-                    };
-
-                    lnkUpdate.LinkClicked += (s, e) =>
-                    {
-                        Process.Start(new ProcessStartInfo
-                        {
-                            FileName = url,
-                            UseShellExecute = true
-                        });
                     };
+                    lnkUpdate.Click += (s, e) => OpenUrl(url);
+                    UpdateUpdateLinkText();
 
-                    parent.Controls.Add(lnkUpdate);
+                    Controls.Add(lnkUpdate);
+                    ClientSize = new Size(ClientSize.Width, lnkUpdate.Bottom + Margin_);
 
                     // アップデートリンク用の動的更新イベント登録
                     LanguageManager.LanguageChanged += UpdateUpdateLinkText;
@@ -151,8 +163,8 @@ namespace PhraseLauncher
             }
             catch
             {
-                // 失敗しても何もしない
-            }
+                // 失敗しても何もしない
+            }
         }
 
         private void UpdateUpdateLinkText()

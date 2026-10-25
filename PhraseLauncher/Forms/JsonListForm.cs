@@ -129,9 +129,11 @@ namespace PhraseLauncher
 
             // 検索パネル
             Panel searchPanel = new() { Dock = DockStyle.Top, Height = 40, Padding = new Padding(8, 6, 8, 6), BackColor = Color.FromArgb(247, 248, 250) };
-            SearchBoxFrame searchFrame = new() { Dock = DockStyle.Fill };
+            ModernTextBox searchFrame = new() { Dock = DockStyle.Fill, ShowSearchIcon = true };
             TextBox searchBox = searchFrame.TextBox;
             includeNoteCheck.Padding = new Padding(10, 0, 0, 0);
+            includeNoteCheck.Font = UiTheme.Font;
+            includeNoteCheck.AutoSize = true;
 
 
 

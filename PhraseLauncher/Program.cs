@@ -59,15 +59,18 @@ namespace PhraseLauncher
         private static void UpdateTrayMenu()
         {
             // メニュー作成
-            ContextMenuStrip menu = new();
-            menu.Items.Add(new ToolStripMenuItem(LanguageManager.GetString("MenuShow"), null, (s, e) => JsonListForm.Show()));
-            menu.Items.Add(new ToolStripMenuItem(LanguageManager.GetString("MenuEdit"), null, (s, e) => new JsonEditorForm().Show()));
-            menu.Items.Add(new ToolStripMenuItem(LanguageManager.GetString("MenuTransfer"),null,(s, e) => new PhraseTransferForm().Show()));
-            menu.Items.Add(new ToolStripMenuItem(LanguageManager.GetString("MenuSetting"), null, (s, e) => new SettingForm().Show()));
-            menu.Items.Add(new ToolStripMenuItem(LanguageManager.GetString("MenuHelp"), null, (s, e) => new HelpForm().Show()));
+            ModernContextMenu menu = new();
+            menu.AddHeader("PhraseLauncher");
+            menu.AddItem(LanguageManager.GetString("MenuShow"), MenuIcon.List, (s, e) => JsonListForm.Show());
+            menu.AddItem(LanguageManager.GetString("MenuEdit"), MenuIcon.Edit, (s, e) => new JsonEditorForm().Show());
+            menu.AddItem(LanguageManager.GetString("MenuTransfer"), MenuIcon.Transfer, (s, e) => new PhraseTransferForm().Show());
+            menu.AddItem(LanguageManager.GetString("MenuSetting"), MenuIcon.Settings, (s, e) => new SettingForm().Show());
+            menu.AddItem(LanguageManager.GetString("MenuHelp"), MenuIcon.Help, (s, e) => new HelpForm().Show());
             menu.Items.Add(new ToolStripSeparator());
-            menu.Items.Add(new ToolStripMenuItem(LanguageManager.GetString("MenuExit"), null, (s, e) => ExitApplication()));
+            menu.AddItem(LanguageManager.GetString("MenuExit"), MenuIcon.Exit, (s, e) => ExitApplication(), danger: true);
+            var old = TrayIcon.ContextMenuStrip;
             TrayIcon.ContextMenuStrip = menu;
+            old?.Dispose();
         }
 
         private static Icon LoadIcon(string fileName)

@@ -183,7 +183,7 @@ namespace PhraseLauncher
         {
             if (!Directory.Exists(txtFolder.Text))
             {
-                MessageBox.Show(LanguageManager.GetString("TransferSelectFolder"));
+                ModernDialog.Show(LanguageManager.GetString("TransferSelectFolder"), icon: DialogIcon.Warning);
                 return;
             }
 
@@ -193,7 +193,7 @@ namespace PhraseLauncher
 
             PhraseTransferService.ExportAllGroups(txtFolder.Text, format);
 
-            MessageBox.Show(LanguageManager.GetString("TransferDone"));
+            ModernDialog.Show(LanguageManager.GetString("TransferDone"), icon: DialogIcon.Success);
             Close();
         }
 
@@ -225,11 +225,11 @@ namespace PhraseLauncher
 
             if (string.IsNullOrEmpty(groupName))
             {
-                MessageBox.Show(LanguageManager.GetString("TransferSelectGroup"));
+                ModernDialog.Show(LanguageManager.GetString("TransferSelectGroup"), icon: DialogIcon.Warning);
                 return;
             }
 
-            var confirm = MessageBox.Show(
+            var confirm = ModernDialog.Show(
                 string.Format(
                     LanguageManager.GetString("TransferConfirmMessage"),
                     Path.GetFileName(dlg.FileName),
@@ -237,7 +237,7 @@ namespace PhraseLauncher
                     groupName),
                 LanguageManager.GetString("TransferConfirmTitle"),
                 MessageBoxButtons.YesNo,
-                MessageBoxIcon.Warning
+                DialogIcon.Warning
             );
 
             if (confirm != DialogResult.Yes)
@@ -253,11 +253,11 @@ namespace PhraseLauncher
                     format,
                     out var error))
             {
-                MessageBox.Show(error);
+                ModernDialog.Show(error, icon: DialogIcon.Error);
                 return;
             }
 
-            MessageBox.Show(LanguageManager.GetString("TransferDone"));
+            ModernDialog.Show(LanguageManager.GetString("TransferDone"), icon: DialogIcon.Success);
             Close();
         }
     }

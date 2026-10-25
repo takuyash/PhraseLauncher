@@ -74,11 +74,11 @@ namespace PhraseLauncher
 
             if (files.Length == 0)
             {
-                MessageBox.Show(
+                ModernDialog.Show(
                   LanguageManager.GetString("ListEmpty"),
                   "PhraseLauncher",
                   MessageBoxButtons.OK,
-                  MessageBoxIcon.Information
+                  DialogIcon.Info
                 );
                 return;
             }

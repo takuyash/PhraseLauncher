@@ -113,6 +113,10 @@ namespace PhraseLauncher
             { "SettingLaunchKeyCount", "連打回数(2～5)回" },
             { "SettingEncryptTemplate", "定型文を暗号化して保存" },
             { "BtnSave", "保存" },
+            { "DialogOK", "OK" },
+            { "DialogCancel", "キャンセル" },
+            { "DialogYes", "はい" },
+            { "DialogNo", "いいえ" },
             // JsonEditorForm
             { "EditorTitle", "定型文編集・登録" },
             { "EditorNew", "新規作成" },
@@ -177,6 +181,10 @@ namespace PhraseLauncher
             { "SettingLaunchKeyCount", "press count(2-5):" },
             { "SettingEncryptTemplate", "Encrypt templates when saving" },
             { "BtnSave", "Save" },
+            { "DialogOK", "OK" },
+            { "DialogCancel", "Cancel" },
+            { "DialogYes", "Yes" },
+            { "DialogNo", "No" },
             // JsonEditorForm
             { "EditorTitle", "Edit/Register Phrases" },
             { "EditorNew", "New" },

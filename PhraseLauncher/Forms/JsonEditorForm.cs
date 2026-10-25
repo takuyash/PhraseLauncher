@@ -90,8 +90,8 @@ namespace PhraseLauncher
             delBtn.Click += (s, e) =>
             {
                 if (dgv.CurrentRow == null || dgv.CurrentRow.IsNewRow) return;
-                if (MessageBox.Show(LanguageManager.GetString("EditorMsgConfirm"), LanguageManager.GetString("EditorMsgConfirmTitle"),
-                    MessageBoxButtons.YesNo) == DialogResult.Yes)
+                if (ModernDialog.Show(LanguageManager.GetString("EditorMsgConfirm"), LanguageManager.GetString("EditorMsgConfirmTitle"),
+                    MessageBoxButtons.YesNo, DialogIcon.Warning, danger: true) == DialogResult.Yes)
                     dgv.Rows.Remove(dgv.CurrentRow);
             };
 
@@ -271,11 +271,12 @@ namespace PhraseLauncher
 
             string name = fileCombo.Text;
 
-            if (MessageBox.Show(
+            if (ModernDialog.Show(
                 string.Format(LanguageManager.GetString("EditorMsgConfirmGroup"), name),
                 LanguageManager.GetString("EditorMsgConfirmTitle"),
                 MessageBoxButtons.YesNo,
-                MessageBoxIcon.Warning) != DialogResult.Yes)
+                DialogIcon.Warning,
+                danger: true) != DialogResult.Yes)
                 return;
 
             string path = Path.Combine(
@@ -341,13 +342,13 @@ namespace PhraseLauncher
             );
 
             TemplateRepository.Save(path, list);
-            MessageBox.Show(LanguageManager.GetString("EditorMsgSaved"));
+            ModernDialog.Show(LanguageManager.GetString("EditorMsgSaved"), icon: DialogIcon.Success);
         }
 
         private void CreateNewFile()
         {
             string newName =
-                Microsoft.VisualBasic.Interaction.InputBox(
+                ModernDialog.Input(
                     LanguageManager.GetString("EditorInputNewMsg"),
                     LanguageManager.GetString("EditorInputNewTitle"), "new");
 
@@ -358,7 +359,7 @@ namespace PhraseLauncher
 
             if (File.Exists(path))
             {
-                MessageBox.Show(LanguageManager.GetString("EditorMsgExists"));
+                ModernDialog.Show(LanguageManager.GetString("EditorMsgExists"), icon: DialogIcon.Warning);
                 return;
             }
 
@@ -375,7 +376,7 @@ namespace PhraseLauncher
 
             string oldName = fileCombo.Text;
             string newName =
-                Microsoft.VisualBasic.Interaction.InputBox(
+                ModernDialog.Input(
                     LanguageManager.GetString("EditorInputRenameMsg"),
                     LanguageManager.GetString("EditorInputRenameTitle"), oldName);
 
@@ -390,7 +391,7 @@ namespace PhraseLauncher
 
             if (File.Exists(newPath))
             {
-                MessageBox.Show(LanguageManager.GetString("EditorMsgExists"));
+                ModernDialog.Show(LanguageManager.GetString("EditorMsgExists"), icon: DialogIcon.Warning);
                 return;
             }
 

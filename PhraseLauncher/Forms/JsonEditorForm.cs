@@ -18,30 +18,36 @@ namespace PhraseLauncher
 
         public JsonEditorForm()
         {
-            Width = 700;
-            Height = 500;
+            Width = 780;
+            Height = 540;
+            MinimumSize = new Size(700, 400);
             Text = LanguageManager.GetString("EditorTitle");
             StartPosition = FormStartPosition.CenterScreen;
             this.Icon = Program.AppIcon;
+            BackColor = UiTheme.Surface;
+            Font = UiTheme.Font;
 
             fileCombo.DropDownStyle = ComboBoxStyle.DropDownList;
+            fileCombo.Font = UiTheme.LargeFont;
+            fileCombo.Width = 240;
+            fileCombo.Margin = new Padding(0, (32 - fileCombo.Height) / 2, 10, 0);
 
             Directory.CreateDirectory(TemplateRepository.JsonFolder);
 
-            fileCombo.SetBounds(10, 10, 300, 25);
+            ModernButton newBtn = new() { Text = LanguageManager.GetString("EditorNew"), Margin = new Padding(0, 0, 6, 0) };
+            ModernButton renameBtn = new() { Text = LanguageManager.GetString("EditorRename"), Margin = new Padding(0, 0, 6, 0) };
+            ModernButton reorderBtn = new() { Text = LanguageManager.GetString("EditorGroupOrder"), Margin = new Padding(0, 0, 6, 0) };
+            ModernButton deleteGroupBtn = new() { Text = LanguageManager.GetString("EditorDeleteGroup"), Variant = ButtonVariant.Danger, Margin = new Padding(0) };
 
-            Button newBtn = new() { Text = LanguageManager.GetString("EditorNew"), Left = 320, Top = 10, Width = 80 };
-            Button renameBtn = new() { Text = LanguageManager.GetString("EditorRename"), Left = 400, Top = 10, Width = 90 };
-            Button reorderBtn = new() { Text = LanguageManager.GetString("EditorGroupOrder"), Left = 490,Top = 10,Width = 100 };
-            Button deleteGroupBtn = new() { Text = LanguageManager.GetString("EditorDeleteGroup"), Left = 590, Top = 10, Width = 90 };
-
-            dgv.SetBounds(10, 40, 660, 380);
+            dgv.Dock = DockStyle.Fill;
             dgv.AllowUserToAddRows = true;
             dgv.ColumnCount = 2;
             dgv.Columns[0].Name = LanguageManager.GetString("EditorColPhrase");
             dgv.Columns[1].Name = LanguageManager.GetString("EditorColNote");
-            dgv.Columns[0].Width = 300;
-            dgv.Columns[1].Width = 300;
+            dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgv.Columns[0].FillWeight = 55;
+            dgv.Columns[1].FillWeight = 45;
+            StyleGrid();
 
             dgv.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
@@ -67,11 +73,12 @@ namespace PhraseLauncher
                 }
             };
 
-            Button saveBtn = new() { Text = LanguageManager.GetString("EditorSave"), Left = 580, Top = 430 };
-            Button delBtn = new() { Text = LanguageManager.GetString("EditorDelete"), Left = 490, Top = 430 };
+            ModernButton saveBtn = new() { Text = LanguageManager.GetString("EditorSave"), Variant = ButtonVariant.Primary, Margin = new Padding(0) };
+            ModernButton delBtn = new() { Text = LanguageManager.GetString("EditorDelete"), Variant = ButtonVariant.Danger, Margin = new Padding(0, 0, 8, 0) };
+            saveBtn.Width = Math.Max(saveBtn.Width, 96);
 
-            Button upBtn = new() { Text = "↑", Left = 220, Top = 430, Width = 40 };
-            Button downBtn = new() { Text = "↓", Left = 270, Top = 430, Width = 40 };
+            ModernButton upBtn = new() { Text = "↑", Margin = new Padding(0, 0, 6, 0) };
+            ModernButton downBtn = new() { Text = "↓", Margin = new Padding(0) };
 
             upBtn.TabStop = false;
             downBtn.TabStop = false;
@@ -120,12 +127,79 @@ namespace PhraseLauncher
             if (fileCombo.Items.Count > 0)
                 fileCombo.SelectedIndex = 0;
 
-            Controls.AddRange(new Control[]
+            // 上部ツールバー
+            FlowLayoutPanel toolbar = new()
             {
-                fileCombo, newBtn, renameBtn, deleteGroupBtn,
-                reorderBtn,
-                dgv, saveBtn, delBtn, upBtn, downBtn
-            });
+                Dock = DockStyle.Top,
+                Height = 56,
+                Padding = new Padding(14, 14, 14, 0),
+                WrapContents = false
+            };
+            toolbar.Controls.AddRange(new Control[] { fileCombo, newBtn, renameBtn, reorderBtn, deleteGroupBtn });
+
+            // 中央：表（1pxの枠付きカード）
+            Panel card = new() { Dock = DockStyle.Fill, Padding = new Padding(1), BackColor = UiTheme.Border };
+            card.Controls.Add(dgv);
+            Panel body = new() { Dock = DockStyle.Fill, Padding = new Padding(14, 10, 14, 0) };
+            body.Controls.Add(card);
+
+            // 下部バー：左に並べ替え、右に削除・保存
+            FlowLayoutPanel moveButtons = new()
+            {
+                Dock = DockStyle.Left,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                WrapContents = false
+            };
+            moveButtons.Controls.AddRange(new Control[] { upBtn, downBtn });
+
+            FlowLayoutPanel actionButtons = new()
+            {
+                Dock = DockStyle.Right,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                FlowDirection = FlowDirection.RightToLeft,
+                WrapContents = false
+            };
+            actionButtons.Controls.AddRange(new Control[] { saveBtn, delBtn });
+
+            Panel bottomBar = new() { Dock = DockStyle.Bottom, Height = 60, Padding = new Padding(14, 14, 14, 14) };
+            bottomBar.Controls.AddRange(new Control[] { moveButtons, actionButtons });
+
+            Controls.AddRange(new Control[] { body, bottomBar, toolbar });
+        }
+
+        private void StyleGrid()
+        {
+            dgv.BorderStyle = BorderStyle.None;
+            dgv.BackgroundColor = Color.White;
+            dgv.GridColor = UiTheme.Divider;
+            dgv.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+            dgv.RowHeadersVisible = false;
+
+            dgv.EnableHeadersVisualStyles = false;
+            dgv.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+            dgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            dgv.ColumnHeadersHeight = 38;
+            dgv.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
+            {
+                BackColor = UiTheme.Surface,
+                ForeColor = UiTheme.TextMuted,
+                SelectionBackColor = UiTheme.Surface,
+                SelectionForeColor = UiTheme.TextMuted,
+                Font = UiTheme.BoldFont,
+                Padding = new Padding(8, 0, 8, 0),
+                Alignment = DataGridViewContentAlignment.MiddleLeft
+            };
+
+            dgv.DefaultCellStyle.Font = UiTheme.LargeFont;
+            dgv.DefaultCellStyle.BackColor = Color.White;
+            dgv.DefaultCellStyle.ForeColor = UiTheme.Text;
+            dgv.DefaultCellStyle.SelectionBackColor = UiTheme.Selection;
+            dgv.DefaultCellStyle.SelectionForeColor = UiTheme.TextStrong;
+            dgv.DefaultCellStyle.Padding = new Padding(8, 6, 8, 6);
+            dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(250, 251, 252);
+            dgv.RowTemplate.MinimumHeight = 34;
         }
 
         /* ================= グループ管理 ================= */

@@ -50,7 +50,14 @@ namespace PhraseLauncher
             StyleGrid();
 
             dgv.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
-            dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            // 編集中に行の高さを自由に変えられるよう、高さは手動で管理する
+            dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
+            dgv.ColumnWidthChanged += (s, e) => dgv.AutoResizeRows(DataGridViewAutoSizeRowsMode.AllCells);
+            dgv.RowsAdded += (s, e) =>
+            {
+                for (int i = e.RowIndex; i < e.RowIndex + e.RowCount && i < dgv.Rows.Count; i++)
+                    dgv.AutoResizeRow(i, DataGridViewAutoSizeRowMode.AllCells);
+            };
 
             dgv.MultiSelect = true;
             dgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
@@ -59,18 +66,27 @@ namespace PhraseLauncher
             dgv.EditingControlShowing += (s, e) =>
             {
                 if (e.Control is TextBox tb)
+                {
                     tb.Multiline = true;
+                    tb.AcceptsReturn = true;
+                    tb.WordWrap = true;
+
+                    // 編集コントロールは使い回されるため、二重登録を防ぐ
+                    tb.TextChanged -= EditingTextChanged;
+                    tb.TextChanged += EditingTextChanged;
+                    AdjustEditingRowHeight(tb);
+                }
             };
 
-            dgv.KeyDown += (s, e) =>
+            dgv.CellEndEdit += (s, e) =>
             {
-                if (e.KeyCode == Keys.Enter && e.Shift &&
-                    dgv.EditingControl is TextBox tb)
+                // 確定後の内容に合わせて高さを再計算
+                int rowIndex = e.RowIndex;
+                BeginInvoke(new Action(() =>
                 {
-                    tb.SelectedText = Environment.NewLine;
-                    e.Handled = true;
-                    e.SuppressKeyPress = true;
-                }
+                    if (rowIndex >= 0 && rowIndex < dgv.Rows.Count)
+                        dgv.AutoResizeRow(rowIndex, DataGridViewAutoSizeRowMode.AllCells);
+                }));
             };
 
             ModernButton saveBtn = new() { Text = LanguageManager.GetString("EditorSave"), Variant = ButtonVariant.Primary, Margin = new Padding(0) };
@@ -167,6 +183,73 @@ namespace PhraseLauncher
             bottomBar.Controls.AddRange(new Control[] { moveButtons, actionButtons });
 
             Controls.AddRange(new Control[] { body, bottomBar, toolbar });
+        }
+
+        /// <summary>
+        /// セル編集中は Enter / Shift+Enter で改行、Ctrl+Enter で編集確定
+        /// </summary>
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (dgv.IsCurrentCellInEditMode && dgv.EditingControl is TextBox tb)
+            {
+                if (keyData == Keys.Enter || keyData == (Keys.Enter | Keys.Shift))
+                {
+                    tb.SelectedText = Environment.NewLine;
+                    tb.ScrollToCaret();
+                    return true;
+                }
+
+                if (keyData == (Keys.Enter | Keys.Control))
+                {
+                    dgv.EndEdit();
+                    return true;
+                }
+            }
+
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+
+        private void EditingTextChanged(object? sender, EventArgs e)
+        {
+            if (sender is TextBox tb)
+                AdjustEditingRowHeight(tb);
+        }
+
+        /// <summary>
+        /// 入力中の行数に合わせて編集中の行の高さを広げる
+        /// </summary>
+        private void AdjustEditingRowHeight(TextBox tb)
+        {
+            var cell = dgv.CurrentCell;
+            if (cell == null) return;
+
+            var row = dgv.Rows[cell.RowIndex];
+            int needed = Math.Max(dgv.RowTemplate.MinimumHeight, MeasureCellHeight(cell, tb.Text, tb.Font));
+
+            // 他の列の内容のほうが高い場合はそちらに合わせる
+            foreach (DataGridViewCell c in row.Cells)
+                if (c.ColumnIndex != cell.ColumnIndex)
+                    needed = Math.Max(needed, MeasureCellHeight(c, c.Value?.ToString() ?? "", c.InheritedStyle.Font ?? dgv.Font));
+
+            if (row.Height != needed)
+            {
+                row.Height = needed;
+                tb.ScrollToCaret();
+            }
+        }
+
+        private static int MeasureCellHeight(DataGridViewCell cell, string text, Font font)
+        {
+            var pad = cell.InheritedStyle.Padding;
+            int width = Math.Max(1, cell.OwningColumn.Width - pad.Horizontal - 4);
+
+            if (text.Length == 0) text = " ";
+            if (text.EndsWith("\n")) text += " "; // 末尾の空行も高さに含める
+
+            var size = TextRenderer.MeasureText(text, font, new Size(width, int.MaxValue),
+                TextFormatFlags.WordBreak | TextFormatFlags.TextBoxControl);
+
+            return size.Height + pad.Vertical + 10;
         }
 
         private void StyleGrid()

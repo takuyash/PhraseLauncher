@@ -117,6 +117,16 @@ You can turn encryption on or off from the settings screen.
 You can import and export predefined phrases.  
 You can choose the format from CSV or JSON.  
 
+### 12. Open the Tab Matching the App in Use
+You can register target apps for each group (tab), and multiple apps can be registered per group.  
+When you open the launcher while a registered app is in use, that app's tab is shown first.  
+- Register target apps with the **Target Apps** button on the edit registration screen  
+- Type an app name (e.g. `notepad`, `EXCEL.EXE`) or click **Browse...** to select an `.exe` file  
+- If the app in use is not registered for any group, the tab that was open when the launcher was last closed is shown  
+- If the same app is registered in multiple groups, the tab that comes first in the group order is opened  
+- Apps are matched by executable name, so different websites in the same browser cannot be told apart  
+- This works when the launcher is opened with the hotkey. If you open it from the tray menu, the app in use cannot be detected, so the previous tab is shown
+
 ---
 
 ## Screenshots
@@ -267,6 +277,16 @@ Shift + Enter で改行も入力できます。
 11. 定型文のインポート、エクスポート  
 定型文のインポート、エクスポートができます。  
 形式はCSVとJSON形式から選べます。  
+
+12. 使用中のアプリに合わせたタブを表示  
+グループ（タブ）ごとに対象アプリを登録できます（1つのグループに複数登録可能）。  
+登録したアプリを使用中にランチャーを開くと、そのタブが最初に表示されます。  
+・編集登録画面の「対象アプリ設定」ボタンから登録できます。  
+・アプリ名（例: `notepad`、`EXCEL.EXE`）を入力するか、「参照...」から exe ファイルを選んで追加します。  
+・どのグループにも登録されていないアプリの場合は、前回ランチャーを閉じたときのタブが表示されます。  
+・同じアプリを複数のグループに登録した場合は、グループの並び順で先にあるタブが開きます。  
+・アプリの判定は実行ファイル名で行うため、同じブラウザ内のサイトごとに分けることはできません。  
+・ホットキーで開いたときに有効です。タスクトレイのメニューから開いた場合は使用中のアプリを判定できないため、前回のタブが表示されます。  
 
 ## 画面
 ### ランチャー画面  

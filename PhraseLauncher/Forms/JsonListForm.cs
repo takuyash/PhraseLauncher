@@ -37,6 +37,9 @@ namespace PhraseLauncher
                 return;
             }
 
+            // 一覧を出す前に、使用中（前面）のアプリを取得しておく
+            string? activeApp = GroupAppRepository.GetForegroundProcessName();
+
             Directory.CreateDirectory(TemplateRepository.JsonFolder);
 
             // ===============================
@@ -303,10 +306,26 @@ namespace PhraseLauncher
             SetForegroundWindow(form.Handle);
             form.Activate();
 
+            // 使用中のアプリが対象アプリに登録されているタブを開く。
+            // 登録されていなければ前回閉じたときのタブ、それもなければ先頭
+            var groupNames = files.Select(f => Path.GetFileNameWithoutExtension(f)).ToList();
+            int startTab = GroupAppRepository.FindGroupIndex(activeApp, groupNames);
+            if (startTab < 0)
+                startTab = groupNames.FindIndex(n => string.Equals(n, LanguageManager.LastTab, StringComparison.OrdinalIgnoreCase));
+            if (startTab < 0) startTab = 0;
+
+            // 閉じたときのタブを次回用に記録
+            form.FormClosing += (s, e) =>
+            {
+                if (tab.SelectedTab != null)
+                    LanguageManager.SaveLastTab(tab.SelectedTab.Text);
+            };
+
             // 初期フォーカス：リスト部分
             if (tab.TabPages.Count > 0)
             {
-                var firstLb = tab.TabPages[0].Controls[0] as ListBox;
+                tab.SelectedIndex = startTab;
+                var firstLb = tab.TabPages[startTab].Controls[0] as ListBox;
                 firstLb.Focus();
                 if (firstLb.Items.Count > 0) firstLb.SelectedIndex = 0;
             }

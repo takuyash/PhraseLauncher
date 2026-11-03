@@ -12,6 +12,7 @@ namespace PhraseLauncher
     {
         ComboBox fileCombo = new();
         DataGridView dgv = new();
+        Label appsValueLabel = new();
 
         string GroupOrderPath =>
             Path.Combine(TemplateRepository.JsonFolder, "groups.json");
@@ -153,6 +154,27 @@ namespace PhraseLauncher
             };
             toolbar.Controls.AddRange(new Control[] { fileCombo, newBtn, renameBtn, reorderBtn, deleteGroupBtn });
 
+            // 対象アプリ：このグループ（タブ）を自動で開くアプリ
+            Panel appsBar = new() { Dock = DockStyle.Top, Height = 42, Padding = new Padding(14, 6, 14, 4) };
+            Label appsCaption = new()
+            {
+                Text = LanguageManager.GetString("EditorTargetApps"),
+                Dock = DockStyle.Left,
+                AutoSize = true,
+                Font = UiTheme.BoldFont,
+                ForeColor = UiTheme.TextMuted,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Padding = new Padding(0, 8, 6, 0)
+            };
+            appsValueLabel.Dock = DockStyle.Fill;
+            appsValueLabel.AutoEllipsis = true;
+            appsValueLabel.UseMnemonic = false;
+            appsValueLabel.TextAlign = ContentAlignment.MiddleLeft;
+            ModernButton editAppsBtn = new() { Text = LanguageManager.GetString("EditorEditApps"), Dock = DockStyle.Right };
+            editAppsBtn.Click += (s, e) => EditTargetApps();
+            appsBar.Controls.AddRange(new Control[] { appsValueLabel, editAppsBtn, appsCaption });
+            UpdateAppsLabel();
+
             // 中央：表（1pxの枠付きカード）
             Panel card = new() { Dock = DockStyle.Fill, Padding = new Padding(1), BackColor = UiTheme.Border };
             card.Controls.Add(dgv);
@@ -182,7 +204,7 @@ namespace PhraseLauncher
             Panel bottomBar = new() { Dock = DockStyle.Bottom, Height = 60, Padding = new Padding(14, 14, 14, 14) };
             bottomBar.Controls.AddRange(new Control[] { moveButtons, actionButtons });
 
-            Controls.AddRange(new Control[] { body, bottomBar, toolbar });
+            Controls.AddRange(new Control[] { body, bottomBar, appsBar, toolbar });
 
             // 表示前（ハンドル作成前）に行を読み込むと、縦スクロールバー分の列幅（Fill）が再計算されず、
             // 列幅の合計が表示幅を超えた状態になってヘッダーのドラッグによる列幅変更が効かなくなる。
@@ -383,6 +405,8 @@ namespace PhraseLauncher
             if (File.Exists(path))
                 File.Delete(path);
 
+            GroupAppRepository.Remove(name);
+
             int index = fileCombo.SelectedIndex;
 
             fileCombo.Items.Remove(name);
@@ -392,6 +416,8 @@ namespace PhraseLauncher
 
             if (fileCombo.Items.Count > 0)
                 fileCombo.SelectedIndex = Math.Min(index, fileCombo.Items.Count - 1);
+            else
+                UpdateAppsLabel();
         }
 
         /* ================= 定型文 ================= */
@@ -419,6 +445,40 @@ namespace PhraseLauncher
             // グループ切替時も列幅とスクロールバーの状態を確定させる（理由はコンストラクタの Shown を参照）
             if (dgv.IsHandleCreated)
                 dgv.AutoResizeRows(DataGridViewAutoSizeRowsMode.AllCells);
+
+            UpdateAppsLabel();
+        }
+
+        /* ================= 対象アプリ ================= */
+
+        private void UpdateAppsLabel()
+        {
+            var apps = string.IsNullOrEmpty(fileCombo.Text)
+                ? new List<string>()
+                : GroupAppRepository.Get(fileCombo.Text);
+
+            if (apps.Count == 0)
+            {
+                appsValueLabel.Text = LanguageManager.GetString("EditorAppsNone");
+                appsValueLabel.ForeColor = UiTheme.TextMuted;
+            }
+            else
+            {
+                appsValueLabel.Text = string.Join(",  ", apps);
+                appsValueLabel.ForeColor = UiTheme.Text;
+            }
+        }
+
+        private void EditTargetApps()
+        {
+            if (string.IsNullOrEmpty(fileCombo.Text)) return;
+            string group = fileCombo.Text;
+
+            using var f = new GroupAppsForm(group, GroupAppRepository.Get(group));
+            if (f.ShowDialog(this) != DialogResult.OK) return;
+
+            GroupAppRepository.Set(group, f.ResultApps);
+            UpdateAppsLabel();
         }
 
         private void SaveData()
@@ -498,6 +558,7 @@ namespace PhraseLauncher
             }
 
             File.Move(oldPath, newPath);
+            GroupAppRepository.Rename(oldName, newName);
 
             RefreshFileList();
             fileCombo.SelectedItem = newName;

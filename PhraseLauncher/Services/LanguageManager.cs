@@ -52,6 +52,21 @@ namespace PhraseLauncher
 
             GetPrivateProfileString("Settings", "EnableTemplateEncryption", "true", temp, 255, IniPath);
             EnableTemplateEncryption = bool.TryParse(temp.ToString(), out bool enc) ? enc : true;
+
+            GetPrivateProfileString("Settings", "LastTab", "", temp, 255, IniPath);
+            LastTab = temp.ToString();
+        }
+
+        /// <summary>
+        /// 定型文一覧を前回閉じたときのタブ（グループ名）
+        /// </summary>
+        public static string LastTab { get; private set; } = "";
+
+        public static void SaveLastTab(string group)
+        {
+            if (group == LastTab) return;
+            LastTab = group;
+            WritePrivateProfileString("Settings", "LastTab", group, IniPath);
         }
 
         public static void SaveLanguage(string lang)
@@ -136,6 +151,17 @@ namespace PhraseLauncher
             { "EditorInputNewMsg", "新規グループ名" },
             { "EditorInputRenameTitle", "変更" },
             { "EditorInputRenameMsg", "新しい名前" },
+            { "EditorTargetApps", "対象アプリ:" },
+            { "EditorAppsNone", "未設定（使用中のアプリに合わせてこのタブを開く場合は登録してください）" },
+            { "EditorEditApps", "対象アプリ設定" },
+            // GroupAppsForm
+            { "AppsTitle", "対象アプリ - {0}" },
+            { "AppsDescription", "ここに登録したアプリを使用中に定型文一覧を開くと、このタブが最初に表示されます。\n同じアプリを複数のグループに登録した場合は、グループ順で先にあるタブが開きます。" },
+            { "AppsAddLabel", "アプリ名を入力、または exe ファイルを参照（例: notepad, EXCEL.EXE）" },
+            { "AppsAdd", "追加" },
+            { "AppsBrowse", "参照..." },
+            { "AppsBrowseFilter", "アプリケーション" },
+            { "AppsRemove", "選択を削除" },
             { "TransferTitle", "定型文のエクスポート" },
             { "TransferExport", "エクスポート" },
             { "TransferSelectFolder", "出力先フォルダを選択してください。" },
@@ -204,6 +230,17 @@ namespace PhraseLauncher
             { "EditorInputNewMsg", "New Group Name" },
             { "EditorInputRenameTitle", "Rename" },
             { "EditorInputRenameMsg", "New Name" },
+            { "EditorTargetApps", "Target apps:" },
+            { "EditorAppsNone", "None (register apps to open this tab when they are in use)" },
+            { "EditorEditApps", "Target Apps" },
+            // GroupAppsForm
+            { "AppsTitle", "Target Apps - {0}" },
+            { "AppsDescription", "When you open the phrase list while one of these apps is in use, this tab is shown first.\nIf an app is registered in multiple groups, the tab that comes first in group order is opened." },
+            { "AppsAddLabel", "Type an app name or browse for an exe file (e.g. notepad, EXCEL.EXE)" },
+            { "AppsAdd", "Add" },
+            { "AppsBrowse", "Browse..." },
+            { "AppsBrowseFilter", "Applications" },
+            { "AppsRemove", "Remove Selected" },
             { "TransferTitle", "Phrase Export" },
             { "TransferExport", "Export" },
             { "TransferSelectFolder", "Please select output folder." },

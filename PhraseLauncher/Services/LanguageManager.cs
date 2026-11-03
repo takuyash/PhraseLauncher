@@ -130,6 +130,7 @@ namespace PhraseLauncher
             { "BtnSave", "保存" },
             { "DialogOK", "OK" },
             { "DialogCancel", "キャンセル" },
+            { "PlaceholderTitle", "空欄の入力" },
             { "DialogYes", "はい" },
             { "DialogNo", "いいえ" },
             // JsonEditorForm
@@ -209,6 +210,7 @@ namespace PhraseLauncher
             { "BtnSave", "Save" },
             { "DialogOK", "OK" },
             { "DialogCancel", "Cancel" },
+            { "PlaceholderTitle", "Fill in the Blanks" },
             { "DialogYes", "Yes" },
             { "DialogNo", "No" },
             // JsonEditorForm

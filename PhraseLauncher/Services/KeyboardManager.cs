@@ -152,8 +152,9 @@ namespace PhraseLauncher
                     _pressedKeys.Add(key);
                     if (index < list.Count)
                     {
-                        PasteHelper.Paste(list[index].text);
                         Program.JsonForm.Close();
+                        Program.JsonForm = null;
+                        PasteHelper.PasteTemplate(list[index].text, JsonListForm.TargetWindow);
                     }
                 }
             }

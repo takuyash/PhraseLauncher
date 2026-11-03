@@ -127,6 +127,20 @@ When you open the launcher while a registered app is in use, that app's tab is s
 - Apps are matched by executable name, so different websites in the same browser cannot be told apart  
 - This works when the launcher is opened with the hotkey. If you open it from the tray menu, the app in use cannot be detected, so the previous tab is shown
 
+### 13. Fill-in Blanks
+Write `{name}` in a phrase to make a blank that you fill in just before pasting.  
+
+```
+Dear {Recipient},
+
+Thank you for your request. We will handle it by {Deadline}.
+```
+
+When you select this phrase, a small input window appears with one field per blank. Type the values and press **Enter** to paste the completed text.  
+- Move between fields with **Tab**; press **Esc** to cancel without pasting  
+- If the same name appears more than once, you only enter it once and it is used everywhere  
+- A blank name cannot contain braces or line breaks (max 40 characters)
+
 ---
 
 ## Screenshots
@@ -287,6 +301,21 @@ Shift + Enter で改行も入力できます。
 ・同じアプリを複数のグループに登録した場合は、グループの並び順で先にあるタブが開きます。  
 ・アプリの判定は実行ファイル名で行うため、同じブラウザ内のサイトごとに分けることはできません。  
 ・ホットキーで開いたときに有効です。タスクトレイのメニューから開いた場合は使用中のアプリを判定できないため、前回のタブが表示されます。  
+
+13. 空欄入力機能  
+定型文の中に `{名前}` と書いておくと、貼り付ける前にその部分だけ入力できます。  
+
+```
+{相手名}様
+
+お世話になっております。
+ご依頼の件、{納期}までに対応いたします。
+```
+
+この定型文を選ぶと小さな入力画面が出るので、入力して **Enter** を押すと完成した文章が貼り付けられます。  
+・欄の移動は **Tab**、**Esc** で貼り付けずにキャンセルします。  
+・同じ名前の空欄が複数あっても入力は1回で、すべての箇所に反映されます。  
+・空欄の名前に波かっこ・改行は使えません（40文字まで）。  
 
 ## 画面
 ### ランチャー画面  

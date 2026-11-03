@@ -17,6 +17,9 @@ namespace PhraseLauncher
 
         public static List<List<TemplateItem>> AllTemplates = new();
 
+        // ランチャーを開いたときに前面にあった（＝貼り付け先の）ウィンドウ
+        public static IntPtr TargetWindow { get; private set; } = IntPtr.Zero;
+
         private static string GroupOrderPath =>
           Path.Combine(TemplateRepository.JsonFolder, "groups.json");
 
@@ -39,6 +42,8 @@ namespace PhraseLauncher
 
             // 一覧を出す前に、使用中（前面）のアプリを取得しておく
             string? activeApp = GroupAppRepository.GetForegroundProcessName();
+            // 空欄入力画面を出した後に貼り付け先へ戻すため、ウィンドウも記録
+            TargetWindow = NativeMethods.GetForegroundWindow();
 
             Directory.CreateDirectory(TemplateRepository.JsonFolder);
 
@@ -343,13 +348,10 @@ namespace PhraseLauncher
         {
             if (lb.SelectedIndex < 0 || lb.SelectedIndex >= list.Count) return;
             string text = list[lb.SelectedIndex].text ?? "";
-            Clipboard.SetText(text);
             form.Close();
             Program.JsonForm = null;
 
-            Timer t = new() { Interval = 50 };
-            t.Tick += (s, e) => { t.Stop(); t.Dispose(); SendKeys.SendWait("^v"); };
-            t.Start();
+            PasteHelper.PasteTemplate(text, TargetWindow);
         }
 
         static string GetShortcutLabel(int index)

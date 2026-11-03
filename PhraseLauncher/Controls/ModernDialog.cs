@@ -114,6 +114,73 @@ namespace PhraseLauncher
             return ShowModal(form, DialogResult.Cancel) == DialogResult.OK ? input.TextBox.Text : "";
         }
 
+        /// <summary>
+        /// 定型文の空欄をまとめて入力させる。キャンセル時は null
+        /// </summary>
+        public static Dictionary<string, string>? InputPlaceholders(IReadOnlyList<string> names)
+        {
+            using var form = CreateForm(LanguageManager.GetString("PlaceholderTitle"));
+            const int width = 420;
+            const int rowHeight = 34;
+            const int rowGap = 10;
+            const int labelGap = 12;
+
+            // ラベル幅は一番長い名前に合わせる（長すぎる場合は省略表示）
+            int labelWidth = 0;
+            foreach (var name in names)
+                labelWidth = Math.Max(labelWidth, TextRenderer.MeasureText(name, UiTheme.Font).Width + 4);
+            labelWidth = Math.Min(labelWidth, 160);
+
+            int inputLeft = Pad + labelWidth + labelGap;
+            int top = 20;
+            var inputs = new List<ModernTextBox>();
+
+            foreach (var name in names)
+            {
+                form.Controls.Add(new Label
+                {
+                    Text = name,
+                    Font = UiTheme.Font,
+                    ForeColor = UiTheme.TextStrong,
+                    UseMnemonic = false,
+                    AutoEllipsis = true,
+                    TextAlign = ContentAlignment.MiddleLeft,
+                    Bounds = new Rectangle(Pad, top, labelWidth, rowHeight)
+                });
+
+                var input = new ModernTextBox { Bounds = new Rectangle(inputLeft, top, width - inputLeft - Pad, rowHeight) };
+                input.TextBox.Font = UiTheme.LargeFont;
+                form.Controls.Add(input);
+                inputs.Add(input);
+
+                top += rowHeight + rowGap;
+            }
+
+            int bodyHeight = top - rowGap + 20;
+            form.ClientSize = new Size(width, bodyHeight + FooterHeight);
+
+            var created = AddFooter(form, width, bodyHeight,
+                new[] { (DialogResult.OK, "DialogOK"), (DialogResult.Cancel, "DialogCancel") }, false);
+            // Enter で確定（＝貼り付け）、Esc でキャンセル。欄の移動は Tab
+            form.AcceptButton = created[0];
+            form.CancelButton = created[1];
+
+            form.Shown += (s, e) =>
+            {
+                // ランチャーを閉じた直後に出すので、確実に前面へ
+                NativeMethods.SetForegroundWindow(form.Handle);
+                form.Activate();
+                if (inputs.Count > 0) inputs[0].TextBox.Focus();
+            };
+
+            if (ShowModal(form, DialogResult.Cancel) != DialogResult.OK) return null;
+
+            var values = new Dictionary<string, string>();
+            for (int i = 0; i < names.Count; i++)
+                values[names[i]] = inputs[i].TextBox.Text;
+            return values;
+        }
+
         /* ================= 共通 ================= */
 
         private static Form CreateForm(string? title) => new()

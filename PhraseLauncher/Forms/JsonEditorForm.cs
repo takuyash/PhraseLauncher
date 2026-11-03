@@ -183,6 +183,11 @@ namespace PhraseLauncher
             bottomBar.Controls.AddRange(new Control[] { moveButtons, actionButtons });
 
             Controls.AddRange(new Control[] { body, bottomBar, toolbar });
+
+            // 表示前（ハンドル作成前）に行を読み込むと、縦スクロールバー分の列幅（Fill）が再計算されず、
+            // 列幅の合計が表示幅を超えた状態になってヘッダーのドラッグによる列幅変更が効かなくなる。
+            // 表示後に行の高さを再計算してレイアウトを確定させる。
+            Shown += (s, e) => dgv.AutoResizeRows(DataGridViewAutoSizeRowsMode.AllCells);
         }
 
         /// <summary>
@@ -257,11 +262,21 @@ namespace PhraseLauncher
             dgv.BorderStyle = BorderStyle.None;
             dgv.BackgroundColor = Color.White;
             dgv.GridColor = UiTheme.Divider;
-            dgv.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
             dgv.RowHeadersVisible = false;
+            dgv.AllowUserToResizeColumns = true;
+
+            // 列の境界（縦線）と行の境界（横線）を表示。外枠はカード側の枠線と重ならないよう右・下のみ
+            dgv.AdvancedCellBorderStyle.Left = DataGridViewAdvancedCellBorderStyle.None;
+            dgv.AdvancedCellBorderStyle.Top = DataGridViewAdvancedCellBorderStyle.None;
+            dgv.AdvancedCellBorderStyle.Right = DataGridViewAdvancedCellBorderStyle.Single;
+            dgv.AdvancedCellBorderStyle.Bottom = DataGridViewAdvancedCellBorderStyle.Single;
 
             dgv.EnableHeadersVisualStyles = false;
-            dgv.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+            // ヘッダーの枠線を None にするとドラッグで列幅を変更できなくなるため、縦線・下線を描画する
+            dgv.AdvancedColumnHeadersBorderStyle.Left = DataGridViewAdvancedCellBorderStyle.None;
+            dgv.AdvancedColumnHeadersBorderStyle.Top = DataGridViewAdvancedCellBorderStyle.None;
+            dgv.AdvancedColumnHeadersBorderStyle.Right = DataGridViewAdvancedCellBorderStyle.Single;
+            dgv.AdvancedColumnHeadersBorderStyle.Bottom = DataGridViewAdvancedCellBorderStyle.Single;
             dgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             dgv.ColumnHeadersHeight = 38;
             dgv.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
@@ -400,6 +415,10 @@ namespace PhraseLauncher
                     t.note?.Replace("\n", Environment.NewLine)
                 );
             }
+
+            // グループ切替時も列幅とスクロールバーの状態を確定させる（理由はコンストラクタの Shown を参照）
+            if (dgv.IsHandleCreated)
+                dgv.AutoResizeRows(DataGridViewAutoSizeRowsMode.AllCells);
         }
 
         private void SaveData()
